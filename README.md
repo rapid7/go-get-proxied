@@ -24,6 +24,54 @@ func main() {
 }
 ```
 
+#### Command Line Usage:
+```bash
+> ./proxymain -h                                                                                                                  Tue Oct 23 10:01:44 2018
+Usage of ./proxymain:
+  -c string
+    	Optional. Path to configuration file.
+  -p string
+    	Optional. The proxy protocol you wish to lookup. Default: https (default "https")
+  -q	Optional. Quiet mode; only write the URL of a proxy to stdout (if found). Default: false
+  -t string
+    	Optional. Target URL which the proxy will be used for. Default: *
+```
+```bash
+> netsh winhttp set proxy testProxy:8999
+
+Current WinHTTP proxy settings:
+
+    Proxy Server(s) :  testProxy:8999
+    Bypass List     :  (none)
+> ./proxymain.exe
+Proxy: WinHTTP:WinHttpDefault|https://testProxy:8999
+Proxy JSON: {
+   "host": "testProxy",
+   "password": null,
+   "port": 8999,
+   "protocol": "https",
+   "src": "WinHTTP:WinHttpDefault",
+   "username": null
+}
+> ./proxy_main.exe -q
+https://testProxy:8999
+```
+```bash
+> echo '{"https":"testProxy:8999"}' > proxy.config
+> ./proxymain -c proxy.config
+Proxy: ConfigurationFile|https://testProxy:8999
+Proxy JSON: {
+   "host": "testProxy",
+   "password": null,
+   "port": 8999,
+   "protocol": "https",
+   "src": "ConfigurationFile",
+   "username": null
+}
+> ./proxymain -c proxy.config -q
+https://testProxy:8999
+```
+
 #### Configuration:
 
 The priority of retrieval is the following.
