@@ -11,4 +11,4 @@ go:
   - tip
 
 script:
-  - go test -v -race $(go list ./... | grep -v vendor)
+  - go test -v -race $(go list ./... | grep -v vendor | grep -v proxy_main)

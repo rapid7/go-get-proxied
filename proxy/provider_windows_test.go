@@ -50,7 +50,7 @@ var dataProviderWindowsIsLpszProxyBypass = []struct {
 	// Matched - Wildcard Prefix
 	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, "*.rapid7.com", true},
 	// Matched - Multiple wildcards
-	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, "endpoint.*.*.com", true},
+	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, "test.*.*.com", true},
 	// Matched - Second value
 	{&url.URL{Host:"test.endpoint.rapid7.com"}, "someHost;rapid7.com", true},
 	// Matched - Just wildcard
