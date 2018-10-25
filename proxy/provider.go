@@ -13,6 +13,7 @@
 package proxy
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -56,14 +58,18 @@ type Provider interface {
 
 type getEnvAdapter func(string) (string)
 
+type commandAdapter func (context.Context, string, ...string) *exec.Cmd
+
 type provider struct {
 	configFile	string
 	getEnv		getEnvAdapter
+	proc		commandAdapter
 }
 
 func (p *provider) init(configFile string) {
 	p.configFile = configFile
 	p.getEnv = os.Getenv
+	p.proc = exec.CommandContext
 }
 
 /*
@@ -299,6 +305,12 @@ func (e notFoundError) Error() (string) {
 	return "No proxy found"
 }
 
+type timeoutError struct {}
+
+func (e timeoutError) Error() (string) {
+	return "Timed out"
+}
+
 /*
 Returns:
 	true: The error represents a Proxy not being found
@@ -309,6 +321,22 @@ func isNotFound(e error) (bool) {
 	case *notFoundError:
 		return true
 	case notFoundError:
+		return true
+	default:
+		return false
+	}
+}
+
+/*
+Returns:
+	true: The error represents a Time out
+	false: Otherwise
+s*/
+func isTimedOut(e error) (bool) {
+	switch e.(type) {
+	case *timeoutError:
+		return true
+	case timeoutError:
 		return true
 	default:
 		return false
