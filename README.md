@@ -18,9 +18,9 @@ import (
 )
 func main() {
     p := proxy.NewProvider("").Get("https", "https://rapid7.com")
-	if p != nil {
-    	fmt.Printf("Found proxy: %s\n", p)
-	}
+    if p != nil {
+        fmt.Printf("Found proxy: %s\n", p)
+    }
 }
 ```
 
@@ -58,6 +58,8 @@ https://testProxy:8999
 ```
 ```bash
 > echo '{"https":"testProxy:8999"}' > proxy.config
+> ./proxymain -c proxy.config -q
+https://testProxy:8999
 > ./proxymain -c proxy.config
 Proxy: ConfigurationFile|https://testProxy:8999
 Proxy JSON: {
@@ -68,8 +70,6 @@ Proxy JSON: {
    "src": "ConfigurationFile",
    "username": null
 }
-> ./proxymain -c proxy.config -q
-https://testProxy:8999
 ```
 
 #### Configuration:

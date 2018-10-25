@@ -205,7 +205,7 @@ If the function fails, it returns FALSE. For extended error data, call GetLastEr
 ```
  */
 //noinspection SpellCheckingInspection
-func GetProxyForUrl(hInternet HInternet, lpcwszUrl Lpwstr, winhttpAutoProxyOptions *AutoProxyOptions) (*ProxyInfo, error) {
+func GetProxyForUrl(hInternet HInternet, lpcwszUrl Lpwstr, pAutoProxyOptions *AutoProxyOptions) (*ProxyInfo, error) {
 	if err := getProxyForUrlP.Find() ; err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func GetProxyForUrl(hInternet HInternet, lpcwszUrl Lpwstr, winhttpAutoProxyOptio
 	r, _, err := getProxyForUrlP.Call(
 		uintptr(hInternet),
 		uintptr(unsafe.Pointer(lpcwszUrl)),
-		uintptr(unsafe.Pointer(winhttpAutoProxyOptions)),
+		uintptr(unsafe.Pointer(pAutoProxyOptions)),
 		uintptr(unsafe.Pointer(p)))
 	if rTrue(r) {
 		return p, nil
