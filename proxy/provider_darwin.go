@@ -16,7 +16,9 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"log"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -52,10 +54,11 @@ Returns:
 	nil: A proxy was not found, or an error occurred
 */
 func (p *providerDarwin) Get(protocol string, targetUrlStr string) (Proxy) {
-	if proxy := p.provider.get(protocol, ParseTargetURL(targetUrlStr)); proxy != nil {
+	targetUrl := ParseTargetURL(targetUrlStr)
+	if proxy := p.provider.get(protocol, targetUrl); proxy != nil {
 		return proxy
 	}
-	return p.readDarwinNetworkSettingProxy(protocol)
+	return p.readDarwinNetworkSettingProxy(protocol, targetUrl)
 }
 
 /*
@@ -75,18 +78,18 @@ func (p *providerDarwin) GetHTTPS(targetUrl string) (Proxy) {
 	return p.Get("https", targetUrl)
 }
 
-
 /*
 Returns the Network Setting Proxy found.
 If none is found, or an error occurs, nil is returned.
 Params:
-	protocol: The protocol of interest
+	protocol: The proxy's protocol (i.e. https)
+	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.myorganization.com)
 Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerDarwin) readDarwinNetworkSettingProxy(protocol string) (Proxy) {
-	proxy, err := p.parseScutildata(protocol, "scutil", "--proxy")
+func (p *providerDarwin) readDarwinNetworkSettingProxy(protocol string, targetUrl *url.URL) (Proxy) {
+	proxy, err := p.parseScutildata(protocol, targetUrl, "scutil", "--proxy")
 	if err != nil {
 		if isNotFound(err){
 			log.Printf("[proxy.Provider.readDarwinNetworkSettingProxy]: %s proxy is not enabled.\n", protocol)
@@ -103,14 +106,15 @@ func (p *providerDarwin) readDarwinNetworkSettingProxy(protocol string) (Proxy) 
 Returns the Proxy found by parsing the Scutil output.
 If none is found, or an error occurs, nil is returned.
 Params:
-	protocol: The protocol of interest
+	protocol: The proxy's protocol (i.e. https)
+	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.myorganization.com)
 	name: The name of the program (scutil)
 	arg: The list of the arguments (--proxy)
 Returns:
-	Proxy: A proxy was found
-	nil: A proxy was not found, or an error occurred
+	Proxy: A proxy was found, nil if no proxy found or an error occurred
+	error: the error that has occurred, nil if there is no error
 */
-func (p *providerDarwin) parseScutildata(protocol string, name string, arg ...string) (Proxy, error) {
+func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, name string, arg ...string) (Proxy, error) {
 	lookupProtocol := strings.ToUpper(protocol) // to cover search for http, HTTP, https, HTTPS
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 1) // Die after one second
@@ -123,13 +127,13 @@ func (p *providerDarwin) parseScutildata(protocol string, name string, arg ...st
 	if err != nil {
 		return nil, new(timeoutError)
 	}
-
-	scanner := bufio.NewScanner(strings.NewReader(out.String()))
+	scutilData := out.String()
+	scanner := bufio.NewScanner(strings.NewReader(scutilData))
 	/* init values */
 	var enable bool
 	var port string
 	var host string
-
+	var bypassProxyEnable bool
 	regexEnable, err := regexp.Compile(lookupProtocol + "Enable:1")
 	if err != nil {
 		return nil, err
@@ -146,9 +150,19 @@ func (p *providerDarwin) parseScutildata(protocol string, name string, arg ...st
 	if err != nil {
 		return nil, err
 	}
+	regexBypassProxy, err := regexp.Compile("ExceptionsList")
+	if err != nil {
+		return nil, err
+	}
 
 	for scanner.Scan() {
 		str := strings.Replace(scanner.Text(), " ", "", -1) // removing spaces
+		if !bypassProxyEnable { // don't search if already found
+			bypassProxyListFound := regexBypassProxy.FindStringIndex(str)
+			if bypassProxyListFound != nil {
+				bypassProxyEnable = true
+			}
+		}
 		if !enable { // don't search if already found
 			// if proxy is disabled, stop the search
 			protocolDisableFound := regexDisable.FindStringIndex(str)
@@ -187,5 +201,63 @@ func (p *providerDarwin) parseScutildata(protocol string, name string, arg ...st
 	if err != nil {
 		return nil, err
 	}
+	// if no bypass info exists, return the proxy obtained
+	if bypassProxyEnable == false {
+		return proxy, nil
+	}
+	proxyBypass , err := p.readScutilBypassProxy(scutilData)
+	if err != nil {
+		return nil, err
+	}
+	if proxyBypass != "" {
+		bypass := p.isProxyBypass(targetUrl, proxyBypass, ",")
+		log.Printf("[proxy.Provider.parseProxyInfo]: ProxyBypass=\"%s\", targetUrl=%s, bypass=%t", proxyBypass, targetUrl, bypass)
+		if bypass {
+			return nil, nil
+		}
+	}
 	return proxy, nil
+}
+
+/*
+Returns the Bypass Proxy Settings found by parsing the Scutil output.
+If none is found, or an error occurs, empty string ("") is returned.
+Params:
+	scutilData: The scutil data content
+Returns:
+	Bypass Proxy list: List of bypass proxies that are found, "" when none found or an error occurred
+	error: the error that has occurred, nil if there is no error
+*/
+func (p *providerDarwin) readScutilBypassProxy(scutilData string) (string, error) {
+	regexBypassProxy, err := regexp.Compile("ExceptionsList.*:.*{(.|\n)*.}")
+	if err != nil {
+		return "", err
+	}
+	exceptionsListFound := regexBypassProxy.FindStringIndex(scutilData)
+	if exceptionsListFound == nil {
+		return "", nil
+	}
+	exceptionsList := scutilData[exceptionsListFound[0]:exceptionsListFound[1]]
+	scanner := bufio.NewScanner(strings.NewReader(exceptionsList))
+	firstLine := -1
+	var bypassProxies string
+	for scanner.Scan() {
+		if firstLine == -1 { // skip the first line
+			firstLine = 0
+			continue
+ 		}
+		str := strings.Replace(scanner.Text(), " ", "", -1) // removing spaces
+		s := fmt.Sprintf("%d:", firstLine)
+		regexProxy, err := regexp.Compile(s)
+		if err != nil {
+			return "", err
+		}
+		firstLine += 1
+		proxyFoundLoc := regexProxy.FindStringIndex(str)
+		if proxyFoundLoc != nil {
+			bypassProxyUrlStr := str[proxyFoundLoc[1]:]
+			bypassProxies = bypassProxies + bypassProxyUrlStr + ","
+		}
+	}
+	return bypassProxies, nil
 }
