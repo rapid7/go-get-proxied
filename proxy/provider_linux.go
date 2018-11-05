@@ -41,7 +41,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred
 */
 func (p *providerLinux) Get(protocol string, targetUrlStr string) (Proxy) {
-	return p.provider.get(protocol, ParseTargetURL(targetUrlStr))
+	return p.provider.get(protocol, ParseTargetURL(targetUrlStr, protocol))
 }
 
 /*

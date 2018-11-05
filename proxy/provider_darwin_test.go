@@ -145,7 +145,7 @@ func TestParseScutildata_Read_HTTPS_HTTP(t *testing.T) {
 
 	commands := getDarwinProviderTestsNoBypass(ScutilDataHttpsHttp)
 
-	targetUrl := ParseTargetURL("")
+	targetUrl := ParseTargetURL("", "")
 
 	protocols := [4]string{"http", "https", "HTTP", "HTTPS"}
 	for _, protocol := range protocols {
@@ -178,7 +178,7 @@ func TestParseScutildata_Read_HTTPS(t *testing.T) {
 
 	commands := getDarwinProviderTestsNoBypass(ScutilDataHttps)
 
-	targetUrl := ParseTargetURL("")
+	targetUrl := ParseTargetURL("", "")
 
 	protocols := [4]string{"http", "https", "HTTP", "HTTPS"}
 	for _, protocol := range protocols {
@@ -217,7 +217,7 @@ func TestParseScutildata_Read_HTTP(t *testing.T) {
 
 	commands := getDarwinProviderTestsNoBypass(ScutilDataHttp)
 
-	targetUrl := ParseTargetURL("")
+	targetUrl := ParseTargetURL("", "")
 
 	protocols := [4]string{"http", "https", "HTTP", "HTTPS"}
 	for _, protocol := range protocols {
@@ -248,7 +248,7 @@ func TestExecCommandsHandledProperly(t *testing.T) {
 
 	c := newDarwinTestProvider()
 
-	targetUrl := ParseTargetURL("")
+	targetUrl := ParseTargetURL("", "")
 	expectedProxy, err := c.parseScutildata("", targetUrl, "exit", "")
 
 	a.Equal(isTimedOut(err), true)
@@ -273,7 +273,7 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 	protocol := "https"
 
 	// test empty target URL
-	targetUrl := ParseTargetURL("")
+	targetUrl := ParseTargetURL("", "")
 	expectedProxy, err := c.parseScutildata(protocol, targetUrl, "echo", command)
 	// test error is nil
 	a.Nil(err)
@@ -287,7 +287,7 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 	for _, tests := range bypassProxySettingsHostsDomains {
 		for _, test := range tests {
 			for urlStr, result := range test {
-				targetUrl := ParseTargetURL(urlStr)
+				targetUrl := ParseTargetURL(urlStr, "")
 				expectedProxy, err := c.parseScutildata(protocol, targetUrl, "echo", command)
 				// test error is nil
 				a.Nil(err)
@@ -308,7 +308,7 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 	for _, tests := range bypassProxySettingsHostsDomains {
 		for _, test := range tests {
 			for urlStr, _ := range test {
-				targetUrl := ParseTargetURL(urlStr)
+				targetUrl := ParseTargetURL(urlStr, "")
 				expectedProxy, err := c.parseScutildata(protocol, targetUrl, "echo", command)
 				// test error is returned correctly
 				a.Equal(isNotFound(err), true)
