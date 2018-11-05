@@ -53,8 +53,8 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerDarwin) Get(protocol string, targetUrlStr string) (Proxy) {
-	targetUrl := ParseTargetURL(targetUrlStr)
+func (p *providerDarwin) Get(protocol, targetUrlStr, defaultScheme string) (Proxy) {
+	targetUrl := ParseTargetURL(targetUrlStr, defaultScheme)
 	if proxy := p.provider.get(protocol, targetUrl); proxy != nil {
 		return proxy
 	}

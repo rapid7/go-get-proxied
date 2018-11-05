@@ -40,8 +40,8 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerLinux) Get(protocol string, targetUrlStr string) (Proxy) {
-	return p.provider.get(protocol, ParseTargetURL(targetUrlStr))
+func (p *providerLinux) Get(protocol, targetUrlStr, defaultScheme string) (Proxy) {
+	return p.provider.get(protocol, ParseTargetURL(targetUrlStr, defaultScheme))
 }
 
 /*

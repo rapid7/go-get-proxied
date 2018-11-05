@@ -43,7 +43,7 @@ type Provider interface {
 		Proxy: A proxy was found.
 		nil: A proxy was not found, or an error occurred.
 	*/
-	Get(protocol string, targetUrl string) (Proxy)
+	Get(protocol, targetUrlStr, defaultScheme string) (Proxy)
 	/*
 	Returns the HTTPS Proxy configuration for the given targetUrl.
 	If none is found, or an error occurs, nil is returned.

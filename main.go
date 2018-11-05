@@ -49,7 +49,7 @@ func main() {
 	if quiet {
 		log.SetOutput(ioutil.Discard)
 	}
-	p := proxy.NewProvider(config).Get(protocol, target)
+	p := proxy.NewProvider(config).Get(protocol, target, protocol)
 	var exit int
 	if p != nil {
 		if !quiet {

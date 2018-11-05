@@ -52,8 +52,8 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerWindows) Get(protocol string, targetUrlStr string) (Proxy) {
-	targetUrl := ParseTargetURL(targetUrlStr)
+func (p *providerWindows) Get(protocol, targetUrlStr, defaultScheme string) (Proxy) {
+	targetUrl := ParseTargetURL(targetUrlStr, defaultScheme)
 	proxy := p.provider.get(protocol, targetUrl)
 	if proxy != nil {
 		return proxy
@@ -79,7 +79,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred
 */
 func (p *providerWindows) GetHTTPS(targetUrlStr string) (Proxy) {
-	return p.Get("https", targetUrlStr)
+	return p.Get("https", targetUrlStr, "https")
 }
 
 type providerWindows struct {
