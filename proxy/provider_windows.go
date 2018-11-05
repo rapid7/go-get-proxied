@@ -48,6 +48,7 @@ This function searches the following locations in the following order:
 Params:
 	protocol: The proxy's protocol (i.e. https)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
+	defaultScheme: The proxy's default scheme
 Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
