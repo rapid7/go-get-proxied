@@ -49,8 +49,8 @@ Returns:
 		* Fragment
 	The given URL string need not be a valid URL
 */
-func ParseTargetURL(targetUrl string) (*url.URL) {
-	parsedUrl, err := ParseURL(targetUrl, "")
+func ParseTargetURL(targetUrl, defaultScheme string) (*url.URL) {
+	parsedUrl, err := ParseURL(targetUrl, defaultScheme)
 	if err != nil {
 		return &url.URL{Host:"*"}
 	}

@@ -108,7 +108,7 @@ func TestParseTargetURL(t *testing.T) {
 	for _, tt := range dataParseTargetURL {
 		t.Run(tt.rawUrl, func(t *testing.T) {
 			a := assert.New(t)
-			a.Equal(tt.expectUrl, ParseTargetURL(tt.rawUrl))
+			a.Equal(tt.expectUrl, ParseTargetURL(tt.rawUrl, ""))
 		})
 	}
 }
