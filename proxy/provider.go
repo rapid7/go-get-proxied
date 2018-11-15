@@ -27,43 +27,43 @@ import (
 )
 
 const (
-	proxyKeyFormat = "%s_PROXY"
+	proxyKeyFormat  = "%s_PROXY"
 	noProxyKeyUpper = "NO_PROXY"
 	noProxyKeyLower = "no_proxy"
 )
 
 type Provider interface {
 	/*
-	Returns the Proxy configuration for the given proxy protocol and targetUrl.
-	If none is found, or an error occurs, nil is returned.
-	Params:
-		protocol: The proxy's protocol (i.e. https)
-		targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
-	Returns:
-		Proxy: A proxy was found.
-		nil: A proxy was not found, or an error occurred.
+		Returns the Proxy configuration for the given proxy protocol and targetUrl.
+		If none is found, or an error occurs, nil is returned.
+		Params:
+			protocol: The proxy's protocol (i.e. https)
+			targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
+		Returns:
+			Proxy: A proxy was found.
+			nil: A proxy was not found, or an error occurred.
 	*/
-	Get(protocol string, targetUrl string) (Proxy)
+	Get(protocol string, targetUrl string) Proxy
 	/*
-	Returns the HTTPS Proxy configuration for the given targetUrl.
-	If none is found, or an error occurs, nil is returned.
-	Params:
-		targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
-	Returns:
-		Proxy: A proxy was found.
-		nil: A proxy was not found, or an error occurred.
+		Returns the HTTPS Proxy configuration for the given targetUrl.
+		If none is found, or an error occurs, nil is returned.
+		Params:
+			targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
+		Returns:
+			Proxy: A proxy was found.
+			nil: A proxy was not found, or an error occurred.
 	*/
-	GetHTTPS(targetUrl string) (Proxy)
+	GetHTTPS(targetUrl string) Proxy
 }
 
-type getEnvAdapter func(string) (string)
+type getEnvAdapter func(string) string
 
-type commandAdapter func (context.Context, string, ...string) *exec.Cmd
+type commandAdapter func(context.Context, string, ...string) *exec.Cmd
 
 type provider struct {
-	configFile	string
-	getEnv		getEnvAdapter
-	proc		commandAdapter
+	configFile string
+	getEnv     getEnvAdapter
+	proc       commandAdapter
 }
 
 func (p *provider) init(configFile string) {
@@ -85,7 +85,7 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *provider) get(protocol string, targetUrl *url.URL) (Proxy) {
+func (p *provider) get(protocol string, targetUrl *url.URL) Proxy {
 	proxy := p.readConfigFileProxy(protocol)
 	if proxy != nil {
 		return proxy
@@ -102,13 +102,14 @@ Returns:
 	Proxy: A proxy is found in proxy.config for the given protocol.
 	nil: No proxy is found or an error occurs reading the proxy.config file.
 */
-func (p *provider) readConfigFileProxy(protocol string) (Proxy) {
+func (p *provider) readConfigFileProxy(protocol string) Proxy {
 	proxyJson, err := p.unmarshalProxyConfigFile()
 	if err != nil {
 		log.Printf("[proxy.Provider.readConfigFileProxy]: %s\n", err)
 		return nil
 	}
-	uStr, exists := proxyJson[protocol] ; if !exists {
+	uStr, exists := proxyJson[protocol]
+	if !exists {
 		return nil
 	}
 	uUrl, uErr := ParseURL(uStr, protocol)
@@ -174,7 +175,7 @@ Returns:
 	proxy: A proxy is found through environment variables for the given protocol.
 	nil: No proxy is found or an error occurs reading the environment variables.
 */
-func (p *provider) readSystemEnvProxy(protocol string, targetUrl *url.URL) (Proxy) {
+func (p *provider) readSystemEnvProxy(protocol string, targetUrl *url.URL) Proxy {
 	keys := []string{
 		strings.ToUpper(fmt.Sprintf(proxyKeyFormat, protocol)),
 		strings.ToLower(fmt.Sprintf(proxyKeyFormat, protocol))}
@@ -182,7 +183,8 @@ func (p *provider) readSystemEnvProxy(protocol string, targetUrl *url.URL) (Prox
 	noProxyValues := map[string]string{
 		noProxyKeyUpper: p.getEnv(noProxyKeyUpper),
 		noProxyKeyLower: p.getEnv(noProxyKeyLower)}
-	K: for _, key := range keys {
+K:
+	for _, key := range keys {
 		proxy, err := p.parseEnvProxy(protocol, key)
 		if err != nil {
 			if !isNotFound(err) {
@@ -224,7 +226,7 @@ Returns:
 	true: The proxy should be bypassed for the given targetUrl
 	false: Otherwise
 */
-func (p *provider) isProxyBypass(targetUrl *url.URL, proxyBypass string, sep string) (bool) {
+func (p *provider) isProxyBypass(targetUrl *url.URL, proxyBypass string, sep string) bool {
 	targetHost, _, _ := SplitHostPort(targetUrl)
 	for _, s := range strings.Split(proxyBypass, sep) {
 		s = strings.TrimSpace(s)
@@ -238,7 +240,7 @@ func (p *provider) isProxyBypass(targetUrl *url.URL, proxyBypass string, sep str
 			}
 		}
 		// Exact match
-		if m, err :=  filepath.Match(s, targetHost) ; err != nil {
+		if m, err := filepath.Match(s, targetHost); err != nil {
 			return false
 		} else if m {
 			return true
@@ -251,7 +253,7 @@ func (p *provider) isProxyBypass(targetUrl *url.URL, proxyBypass string, sep str
 			}
 			s = "*" + s
 		}
-		if m, err :=  filepath.Match(s, targetHost) ; err != nil {
+		if m, err := filepath.Match(s, targetHost); err != nil {
 			return false
 		} else if m {
 			return true
@@ -289,7 +291,7 @@ Params:
 Returns:
 	url.URL: If the environment variable was populated, the parsed value. Otherwise nil.
 	error: If the environment variable was populated, but we failed to parse it.
- */
+*/
 func (p *provider) parseEnvURL(key string) (*url.URL, error) {
 	value := strings.TrimSpace(p.getEnv(key))
 	if value != "" {
@@ -298,16 +300,15 @@ func (p *provider) parseEnvURL(key string) (*url.URL, error) {
 	return nil, new(notFoundError)
 }
 
+type notFoundError struct{}
 
-type notFoundError struct {}
-
-func (e notFoundError) Error() (string) {
+func (e notFoundError) Error() string {
 	return "No proxy found"
 }
 
-type timeoutError struct {}
+type timeoutError struct{}
 
-func (e timeoutError) Error() (string) {
+func (e timeoutError) Error() string {
 	return "Timed out"
 }
 
@@ -316,7 +317,7 @@ Returns:
 	true: The error represents a Proxy not being found
 	false: Otherwise
 s*/
-func isNotFound(e error) (bool) {
+func isNotFound(e error) bool {
 	switch e.(type) {
 	case *notFoundError:
 		return true
@@ -332,7 +333,7 @@ Returns:
 	true: The error represents a Time out
 	false: Otherwise
 s*/
-func isTimedOut(e error) (bool) {
+func isTimedOut(e error) bool {
 	switch e.(type) {
 	case *timeoutError:
 		return true

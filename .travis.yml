@@ -4,11 +4,8 @@ sudo: false
 
 go:
   - "1.7"
-  - "1.8"
-  - "1.9"
-  - "1.10"
-  - "1.11"
   - tip
 
 script:
+  - ./.travis.gofmt.sh
   - go test -v $(go list ./... | grep -v vendor)

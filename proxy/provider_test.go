@@ -24,19 +24,19 @@ import (
 )
 
 var dataProviderReadConfigFileProxy = []struct {
-	content 	string
-	expected	Proxy
-} {
+	content  string
+	expected Proxy
+}{
 	// Typical
-	{"{\"https\": \"1.2.3.4:8080\"}", &proxy{protocol:"https", host:"1.2.3.4", port:8080, src:"ConfigurationFile"}},
+	{"{\"https\": \"1.2.3.4:8080\"}", &proxy{protocol: "https", host: "1.2.3.4", port: 8080, src: "ConfigurationFile"}},
 	// No port
-	{"{\"https\": \"1.2.3.4\"}", &proxy{protocol:"https", host:"1.2.3.4", port:8443, src:"ConfigurationFile"}},
+	{"{\"https\": \"1.2.3.4\"}", &proxy{protocol: "https", host: "1.2.3.4", port: 8443, src: "ConfigurationFile"}},
 	// Protocol
-	{"{\"https\": \"https://test\"}", &proxy{protocol:"https", host:"test", port:8443, src:"ConfigurationFile"}},
+	{"{\"https\": \"https://test\"}", &proxy{protocol: "https", host: "test", port: 8443, src: "ConfigurationFile"}},
 	// All caps
-	{"{\"HTTPS\": \"https://test\"}", &proxy{protocol:"https", host:"test", port:8443, src:"ConfigurationFile"}},
+	{"{\"HTTPS\": \"https://test\"}", &proxy{protocol: "https", host: "test", port: 8443, src: "ConfigurationFile"}},
 	// Multiple - mixed case - uses last entry
-	{"{\"https\": \"https://dontPickMe\", \"HTTPS\": \"https://test\"}", &proxy{protocol:"https", host:"test", port:8443, src:"ConfigurationFile"}},
+	{"{\"https\": \"https://dontPickMe\", \"HTTPS\": \"https://test\"}", &proxy{protocol: "https", host: "test", port: 8443, src: "ConfigurationFile"}},
 	// Mismatched protocol on https
 	{"{\"https\": \"socks5://test:8080\"}", nil},
 	// Invalid URL
@@ -109,7 +109,7 @@ func TestProvider_ParseConfigFileProxies_emptyFile(t *testing.T) {
 		return
 	}
 	fp.Close()
-	if _, err := os.Stat(f) ; !a.NoError(err) {
+	if _, err := os.Stat(f); !a.NoError(err) {
 		return
 	}
 	p := newTestProvider(f)
@@ -145,58 +145,59 @@ func TestProvider_ParseConfigFileProxies_tooLarge(t *testing.T) {
 }
 
 var dataProviderReadSystemEnvProxiesAll = []struct {
-	env 			map[string]string
-	targetUrl		*url.URL
-	expect 			Proxy
-} {
+	env       map[string]string
+	targetUrl *url.URL
+	expect    Proxy
+}{
 	// Match upper
 	{
 		map[string]string{
 			"HTTPS_PROXY": "testUpper:8999",
 			"https_proxy": "HTTPS://testLower",
-			"HTTP_PROXY": "testUpper:8080",
+			"HTTP_PROXY":  "testUpper:8080",
 		},
-		&url.URL{Scheme:"https", Host: "test.endpoint.rapid7.com"},
+		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
 		newTestProxy("https", "testUpper", 8999, nil, "Environment[HTTPS_PROXY]"),
 	},
 	// Match lower, no proxy does not match
 	{
 		map[string]string{
 			"https_proxy": "HTTPS://testLower",
-			"HTTP_PROXY": "testUpper:8080",
-			"NO_PROXY": "someHost",
+			"HTTP_PROXY":  "testUpper:8080",
+			"NO_PROXY":    "someHost",
 		},
-		&url.URL{Scheme:"https", Host: "test.endpoint.rapid7.com"},
+		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
 		newTestProxy("https", "testLower", 8443, nil, "Environment[https_proxy]"),
 	},
 	// Match upper, no proxy matches
 	{
 		map[string]string{
 			"HTTPS_PROXY": "https://testUpper",
-			"NO_PROXY": "rapid7.com",
+			"NO_PROXY":    "rapid7.com",
 		},
-		&url.URL{Scheme:"https", Host: "test.endpoint.rapid7.com"},
+		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
 		nil,
 	},
 	// Match upper, no proxy matches lower
 	{
 		map[string]string{
 			"HTTPS_PROXY": "https://testUpper",
-			"no_proxy": "rapid7.com",
+			"no_proxy":    "rapid7.com",
 		},
-		&url.URL{Scheme:"https", Host: "test.endpoint.rapid7.com"},
+		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
 		nil,
 	},
 	{
 		map[string]string{}, new(url.URL), nil,
 	},
 }
+
 func TestProvider_ReadSystemEnvProxy(t *testing.T) {
 	for _, tt := range dataProviderReadSystemEnvProxiesAll {
 		tName := fmt.Sprintf("%s", tt.env)
 		t.Run(tName, func(t *testing.T) {
 			a := assert.New(t)
-			getEnv := func (key string) (string) {
+			getEnv := func(key string) string {
 				return tt.env[key]
 			}
 			p := newTestProvider("")
@@ -207,10 +208,10 @@ func TestProvider_ReadSystemEnvProxy(t *testing.T) {
 }
 
 var dataProviderParseEnvHTTPSProxy = []struct {
-	protocol   		string
-	value 			string
-	expectProxy		Proxy
-	expectError		error
+	protocol    string
+	value       string
+	expectProxy Proxy
+	expectError error
 }{
 	{"https", "https://test", newTestProxy("https", "test", 8443, nil, "Environment[Key]"), nil},
 	{"https", "test:8080", newTestProxy("https", "test", 8080, nil, "Environment[Key]"), nil},
@@ -234,7 +235,7 @@ func TestProvider_ParseEnvProxy(t *testing.T) {
 	for _, tt := range dataProviderParseEnvHTTPSProxy {
 		t.Run(tt.value, func(t *testing.T) {
 			a := assert.New(t)
-			getEnv := func (key string) (string) {
+			getEnv := func(key string) string {
 				a.Equal("Key", key)
 				return tt.value
 			}
@@ -258,15 +259,15 @@ func TestProvider_ParseEnvProxy(t *testing.T) {
 }
 
 var dataProviderParseEnvURL = []struct {
-	value 		string
-	expectUrl 	*url.URL
+	value       string
+	expectUrl   *url.URL
 	expectError error
 }{
-	{"https://test", &url.URL{Scheme:"https", Host:"test"}, nil},
-	{"test:8080", &url.URL{Scheme:"", Host:"test:8080"}, nil},
-	{"1.2.3.4:8080", &url.URL{Scheme:"", Host:"1.2.3.4:8080"}, nil},
-	{"HTTPS://username:password@1.2.3.4:8080", &url.URL{Scheme:"https", Host:"1.2.3.4:8080", User:url.UserPassword("username", "password")}, nil},
-	{"username:password@1.2.3.4:8080", &url.URL{Scheme:"", Host:"1.2.3.4:8080", User:url.UserPassword("username", "password")}, nil},
+	{"https://test", &url.URL{Scheme: "https", Host: "test"}, nil},
+	{"test:8080", &url.URL{Scheme: "", Host: "test:8080"}, nil},
+	{"1.2.3.4:8080", &url.URL{Scheme: "", Host: "1.2.3.4:8080"}, nil},
+	{"HTTPS://username:password@1.2.3.4:8080", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
+	{"username:password@1.2.3.4:8080", &url.URL{Scheme: "", Host: "1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
 	{"", nil, new(notFoundError)},
 	{"   ", nil, new(notFoundError)},
 	// Invalid
@@ -281,7 +282,7 @@ func TestProvider_ConfigProviderParseEnvURL(t *testing.T) {
 	for _, tt := range dataProviderParseEnvURL {
 		t.Run(tt.value, func(t *testing.T) {
 			a := assert.New(t)
-			getEnv := func (key string) (string) {
+			getEnv := func(key string) string {
 				a.Equal("Key", key)
 				return tt.value
 			}
@@ -305,45 +306,45 @@ func TestProvider_ConfigProviderParseEnvURL(t *testing.T) {
 }
 
 var dataProviderIsProxyBypass = []struct {
-	targetUrl	*url.URL
-	proxyBypass	string
-	expect		bool
+	targetUrl   *url.URL
+	proxyBypass string
+	expect      bool
 }{
 	// nil URL will be Host:*
 	{nil, "someHost.com", false},
 	// Invalid host will be Host:*
-	{&url.URL{Host:"test:test"}, "someHost.com", false},
+	{&url.URL{Host: "test:test"}, "someHost.com", false},
 	// Empty proxyBypass values
-	{&url.URL{Host:"test:8080"}, "  ", false},
-	{&url.URL{Host:"test:8080"}, ",", false},
+	{&url.URL{Host: "test:8080"}, "  ", false},
+	{&url.URL{Host: "test:8080"}, ",", false},
 	// Matched
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "rapid7.com", true},
 	// Matched - Sub Domain
-	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, ".rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com:443"}, ".rapid7.com", true},
 	// Matched - Wildcard Prefix
-	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, "*.rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com:443"}, "*.rapid7.com", true},
 	// Matched - Multiple wildcards
-	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, "test.*.*.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com:443"}, "test.*.*.com", true},
 	// Matched - Second value
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "someHost,rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "someHost,rapid7.com", true},
 	// Matched - Just wildcard
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "*", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "*", true},
 	// Matched - Wildcard second
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, ",*", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, ",*", true},
 	// Exact match
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "test.endpoint.rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "test.endpoint.rapid7.com", true},
 	// Matched - Local Host
-	{&url.URL{Host:"localhost"}, "<local>", true},
+	{&url.URL{Host: "localhost"}, "<local>", true},
 	// Matched - Local Host second
-	{&url.URL{Host:"localhost"}, "someHost,<local>", true},
+	{&url.URL{Host: "localhost"}, "someHost,<local>", true},
 	// Matched - Local IPv4
-	{&url.URL{Host:"[::1]"}, "<local>", true},
+	{&url.URL{Host: "[::1]"}, "<local>", true},
 	// Matched - Local IPv6
-	{&url.URL{Host:"127.0.0.1"}, "<local>", true},
+	{&url.URL{Host: "127.0.0.1"}, "<local>", true},
 	// Not Matched
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "someHost", false},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "someHost", false},
 	// Not Matched - Not local
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "<local>", false},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "<local>", false},
 }
 
 func TestProvider_IsProxyBypass(t *testing.T) {
@@ -363,18 +364,18 @@ func TestProvider_IsProxyBypass(t *testing.T) {
 	}
 }
 
-func newTestProvider(configFile string) (*provider) {
+func newTestProvider(configFile string) *provider {
 	c := new(provider)
 	c.init(configFile)
 	return c
 }
 
-func newTestProxy(protocol string, host string, port uint16, user *url.Userinfo, src string) (Proxy) {
+func newTestProxy(protocol string, host string, port uint16, user *url.Userinfo, src string) Proxy {
 	return &proxy{
-		protocol:protocol,
-		host:host,
-		port:port,
-		user:user,
-		src:src,
+		protocol: protocol,
+		host:     host,
+		port:     port,
+		user:     user,
+		src:      src,
 	}
 }

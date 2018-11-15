@@ -13,7 +13,6 @@ import (
 	"unsafe"
 )
 
-
 func TestStringToLpwstr_empty(t *testing.T) {
 	a := assert.New(t)
 	a.Nil(StringToLpwstr(""))

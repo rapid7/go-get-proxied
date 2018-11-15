@@ -11,11 +11,11 @@ import (
 
 const (
 	ScutilDataHttpsHttp = "ScutilDataHttpsHttp"
-	ScutilDataHttps = "ScutilDataHttps"
-	ScutilDataHttp = "ScutilDataHttp"
+	ScutilDataHttps     = "ScutilDataHttps"
+	ScutilDataHttp      = "ScutilDataHttp"
 )
 
-const(
+const (
 	ScutilBypassTest1 = "localhost"
 	ScutilBypassTest2 = "myorg1.com"
 	ScutilBypassTest3 = "endpoint.myorg2.com"
@@ -27,25 +27,25 @@ const(
 
 var providerDarwinTestCasesNoBypass = []struct {
 	testType string
-	test string
+	test     string
 }{
 	{ScutilDataHttpsHttp,
-	"<dictionary> {\n  HTTPSEnable : 1\n HTTPSPort : 1234\n  HTTPSProxy : 1.2.3.4\n HTTPEnable : 1\n  " +
-		"HTTPPort : 1234\n  HTTPProxy : 1.2.3.4\n}"},
+		"<dictionary> {\n  HTTPSEnable : 1\n HTTPSPort : 1234\n  HTTPSProxy : 1.2.3.4\n HTTPEnable : 1\n  " +
+			"HTTPPort : 1234\n  HTTPProxy : 1.2.3.4\n}"},
 	{ScutilDataHttpsHttp,
-	"         <dictionary> {   \n  HTTPSEnable:1    \nHTTPSPort :  1234\n  HTTPSProxy :  1.2.3.4\n " +
-		"HTTPEnable : 1   \n  HTTPPort :      1234\nHTTPProxy: 1.2.3.4   \n    }"},
+		"         <dictionary> {   \n  HTTPSEnable:1    \nHTTPSPort :  1234\n  HTTPSProxy :  1.2.3.4\n " +
+			"HTTPEnable : 1   \n  HTTPPort :      1234\nHTTPProxy: 1.2.3.4   \n    }"},
 	{ScutilDataHttps,
-	"<dictionary> {\n  HTTPEnable : 0\n  HTTPSEnable : 1\n  HTTPSPort : 1234\n  HTTPSProxy : 1.2.3.4\n}"},
+		"<dictionary> {\n  HTTPEnable : 0\n  HTTPSEnable : 1\n  HTTPSPort : 1234\n  HTTPSProxy : 1.2.3.4\n}"},
 	{ScutilDataHttps,
-	"<dictionary> {\n   HTTPEnable: 0\n  HTTPSEnable: 1\nHTTPSPort :      1234\n     HTTPSProxy:   1.2.3.4\n}"},
+		"<dictionary> {\n   HTTPEnable: 0\n  HTTPSEnable: 1\nHTTPSPort :      1234\n     HTTPSProxy:   1.2.3.4\n}"},
 	{ScutilDataHttp,
-	"<dictionary> {\n  HTTPSEnable : 0\n  HTTPEnable : 1\n  HTTPPort : 1234\n  HTTPProxy : 1.2.3.4\n}"},
+		"<dictionary> {\n  HTTPSEnable : 0\n  HTTPEnable : 1\n  HTTPPort : 1234\n  HTTPProxy : 1.2.3.4\n}"},
 	{ScutilDataHttp,
-	"<dictionary> {\n     HTTPSEnable:0\n  HTTPEnable: 1\nHTTPPort :       1234\n     HTTPProxy:   1.2.3.4\n}"},
+		"<dictionary> {\n     HTTPSEnable:0\n  HTTPEnable: 1\nHTTPPort :       1234\n     HTTPProxy:   1.2.3.4\n}"},
 }
 
-var bypassProxySettingsHostsDomains = map[string] []map[string] bool {
+var bypassProxySettingsHostsDomains = map[string][]map[string]bool{
 	ScutilBypassTest1: { // TODO: for MAC, we need to support "*.local"
 		{"localhost": true},
 		{"localhost:1234": true},
@@ -56,7 +56,7 @@ var bypassProxySettingsHostsDomains = map[string] []map[string] bool {
 	ScutilBypassTest2: {
 		{"myorg1.com": true},
 		{"myorg1.com:443": true},
-		{"www.myorg1.com":true},
+		{"www.myorg1.com": true},
 		{"https://myorg1.com": true},
 		{"https://www.myorg1.com": true},
 		{"https://www.myorg1.com:443": true},
@@ -115,12 +115,12 @@ var bypassProxySettingsHostsDomains = map[string] []map[string] bool {
 	},
 }
 
-var providerDarwinTestCaseBypass = fmt.Sprintf("<dictionary> {\n  ExceptionsList : <array> {\n    0 : %s\n    1 : %s\n    2 : %s\n    " +
-	"3 : %s\n    4: %s\n    5: %s\n    6 : %s\n  }\n  HTTPEnable : 0\n  HTTPSEnable : 1\n  HTTPSPort : 1234\n " +
+var providerDarwinTestCaseBypass = fmt.Sprintf("<dictionary> {\n  ExceptionsList : <array> {\n    0 : %s\n    1 : %s\n    2 : %s\n    "+
+	"3 : %s\n    4: %s\n    5: %s\n    6 : %s\n  }\n  HTTPEnable : 0\n  HTTPSEnable : 1\n  HTTPSPort : 1234\n "+
 	"HTTPSProxy : 1.2.3.4\n}\n", ScutilBypassTest1, ScutilBypassTest2, ScutilBypassTest3, ScutilBypassTest4,
 	ScutilBypassTest5, ScutilBypassTest6, ScutilBypassTest7)
 
-func getDarwinProviderTestsNoBypass(key string)([]string){
+func getDarwinProviderTestsNoBypass(key string) []string {
 	var s []string
 	for _, v := range providerDarwinTestCasesNoBypass {
 		if v.testType == key {
@@ -192,7 +192,7 @@ func TestParseScutildata_Read_HTTPS(t *testing.T) {
 				// test expected https proxy matches hardcoded proxy
 				a.Equal(&proxy{src: "State:/Network/Global/Proxies", protocol: strings.ToLower(protocol), host: "1.2.3.4", port: 1234},
 					expectedProxy)
-			}else{
+			} else {
 				// test http proxy is nil
 				a.Nil(expectedProxy)
 				a.Equal(isNotFound(err), true)
@@ -231,7 +231,7 @@ func TestParseScutildata_Read_HTTP(t *testing.T) {
 				// test expected http proxy matches hardcoded proxy
 				a.Equal(&proxy{src: "State:/Network/Global/Proxies", protocol: strings.ToLower(protocol), host: "1.2.3.4", port: 1234},
 					expectedProxy)
-			}else{
+			} else {
 				// test https proxy is nil
 				a.Nil(expectedProxy)
 				a.Equal(isNotFound(err), true)
@@ -307,7 +307,7 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 	protocol = "http"
 	for _, tests := range bypassProxySettingsHostsDomains {
 		for _, test := range tests {
-			for urlStr, _ := range test {
+			for urlStr := range test {
 				targetUrl := ParseTargetURL(urlStr, "")
 				expectedProxy, err := c.parseScutildata(protocol, targetUrl, "echo", command)
 				// test error is returned correctly
@@ -319,8 +319,8 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 	}
 }
 
-func newDarwinTestProvider() (*providerDarwin) {
-	Cmd := func (ctx context.Context, name string, args ...string) *exec.Cmd {
+func newDarwinTestProvider() *providerDarwin {
+	Cmd := func(ctx context.Context, name string, args ...string) *exec.Cmd {
 		return exec.CommandContext(ctx, name, args...)
 	}
 	c := new(providerDarwin)

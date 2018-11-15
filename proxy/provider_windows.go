@@ -28,8 +28,8 @@ const (
 Create a new Provider which is used to retrieve Proxy configurations.
 Params:
 	configFile: Optional. Path to a configuration file which specifies proxies.
- */
-func NewProvider(configFile string) (Provider) {
+*/
+func NewProvider(configFile string) Provider {
 	c := new(providerWindows)
 	c.init(configFile)
 	return c
@@ -52,7 +52,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerWindows) Get(protocol string, targetUrlStr string) (Proxy) {
+func (p *providerWindows) Get(protocol string, targetUrlStr string) Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
 	proxy := p.provider.get(protocol, targetUrl)
 	if proxy != nil {
@@ -78,7 +78,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerWindows) GetHTTPS(targetUrlStr string) (Proxy) {
+func (p *providerWindows) GetHTTPS(targetUrlStr string) Proxy {
 	return p.Get("https", targetUrlStr)
 }
 
@@ -87,7 +87,7 @@ type providerWindows struct {
 }
 
 //noinspection SpellCheckingInspection
-func (p *providerWindows) readWinHttpProxy(protocol string, targetUrl *url.URL) (Proxy) {
+func (p *providerWindows) readWinHttpProxy(protocol string, targetUrl *url.URL) Proxy {
 	// Internet Options
 	ieProxyConfig, err := p.getIeProxyConfigCurrentUser()
 	if err != nil {
@@ -102,7 +102,7 @@ func (p *providerWindows) readWinHttpProxy(protocol string, targetUrl *url.URL) 
 				log.Printf("[proxy.Provider.readWinHttpProxy] No proxy discovered via AutoDetect: %s\n", err)
 			}
 		}
-		if autoConfigUrl := winhttp.LpwstrToString(ieProxyConfig.LpszAutoConfigUrl) ; autoConfigUrl != "" {
+		if autoConfigUrl := winhttp.LpwstrToString(ieProxyConfig.LpszAutoConfigUrl); autoConfigUrl != "" {
 			proxy, err := p.getProxyAutoConfigUrl(protocol, targetUrl, autoConfigUrl)
 			if err == nil {
 				return proxy
@@ -152,11 +152,11 @@ Returns:
 	nil, notFoundError: No proxy was found
 	nil, error: An error occurred
 */
-func (p *providerWindows) getProxyAutoDetect(protocol string, targetUrl *url.URL)  (Proxy, error){
+func (p *providerWindows) getProxyAutoDetect(protocol string, targetUrl *url.URL) (Proxy, error) {
 	return p.getProxyForUrl("WinHTTP:AutoDetect", protocol, targetUrl,
 		&winhttp.AutoProxyOptions{
-			DwFlags: winhttp.WINHTTP_AUTOPROXY_AUTO_DETECT,
-			DwAutoDetectFlags: winhttp.WINHTTP_AUTO_DETECT_TYPE_DHCP|winhttp.WINHTTP_AUTO_DETECT_TYPE_DNS_A,
+			DwFlags:                winhttp.WINHTTP_AUTOPROXY_AUTO_DETECT,
+			DwAutoDetectFlags:      winhttp.WINHTTP_AUTO_DETECT_TYPE_DHCP | winhttp.WINHTTP_AUTO_DETECT_TYPE_DNS_A,
 			FAutoLogonIfChallenged: true,
 		})
 }
@@ -175,10 +175,10 @@ Returns:
 func (p *providerWindows) getProxyAutoConfigUrl(protocol string, targetUrl *url.URL, autoConfigUrl string) (Proxy, error) {
 	return p.getProxyForUrl("WinHTTP:AutoConfigUrl", protocol, targetUrl,
 		&winhttp.AutoProxyOptions{
-			DwFlags: winhttp.WINHTTP_AUTOPROXY_CONFIG_URL,
-			LpszAutoConfigUrl: winhttp.StringToLpwstr(autoConfigUrl),
+			DwFlags:                winhttp.WINHTTP_AUTOPROXY_CONFIG_URL,
+			LpszAutoConfigUrl:      winhttp.StringToLpwstr(autoConfigUrl),
 			FAutoLogonIfChallenged: true,
-	})
+		})
 }
 
 /*
@@ -301,7 +301,7 @@ Returns:
 	string: The proxy URL (if any) from the lpszProxy value.
 */
 //noinspection SpellCheckingInspection
-func (p *providerWindows) parseLpszProxy(protocol string, lpszProxy string) (string) {
+func (p *providerWindows) parseLpszProxy(protocol string, lpszProxy string) string {
 	m := ""
 	for _, s := range strings.Split(lpszProxy, ";") {
 		parts := strings.SplitN(s, "=", 2)
@@ -331,7 +331,7 @@ Returns:
 	false: Otherwise
 */
 //noinspection SpellCheckingInspection
-func (p *providerWindows) isLpszProxyBypass(targetUrl *url.URL, lpszProxyBypass string) (bool) {
+func (p *providerWindows) isLpszProxyBypass(targetUrl *url.URL, lpszProxyBypass string) bool {
 	return p.isProxyBypass(targetUrl, lpszProxyBypass, ";")
 }
 
@@ -344,7 +344,7 @@ func (p *providerWindows) freeWinHttpResource(r winhttp.Allocated) {
 	if r == nil {
 		return
 	}
-	if err := r.Free() ; err != nil {
+	if err := r.Free(); err != nil {
 		log.Printf("[proxy.Provider.readWinHttp] Failed to free struct \"%s\": %s\n", reflect.TypeOf(r), err)
 	}
 }

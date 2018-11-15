@@ -20,79 +20,79 @@ import (
 )
 
 var dataNewProxy = []struct {
-	protocol	string
-	u 			*url.URL
-	expectP		Proxy
-	expectErr	error
+	protocol  string
+	u         *url.URL
+	expectP   Proxy
+	expectErr error
 }{
 	// All input
 	{
-		"https", &url.URL{Scheme:"https", Host:"testProxy:8999", User:url.UserPassword("user1", "password1")},
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.UserPassword("user1", "password1"), src:"Test"}, nil,
+		"https", &url.URL{Scheme: "https", Host: "testProxy:8999", User: url.UserPassword("user1", "password1")},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.UserPassword("user1", "password1"), src: "Test"}, nil,
 	},
 	// No password
 	{
-		"https", &url.URL{Scheme:"https", Host:"testProxy:8999", User:url.User("user1")},
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.User("user1"), src:"Test"}, nil,
+		"https", &url.URL{Scheme: "https", Host: "testProxy:8999", User: url.User("user1")},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.User("user1"), src: "Test"}, nil,
 	},
 	// No user
 	{
-		"https", &url.URL{Scheme:"https", Host:"testProxy:8999"},
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:nil, src:"Test"}, nil,
+		"https", &url.URL{Scheme: "https", Host: "testProxy:8999"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: nil, src: "Test"}, nil,
 	},
 	// No port
 	{
-		"https", &url.URL{Scheme:"https", Host:"testProxy"},
-		&proxy{protocol:"https", host:"testProxy", port:8443, user:nil, src:"Test"}, nil,
+		"https", &url.URL{Scheme: "https", Host: "testProxy"},
+		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// No port - Default protocol
 	{
-		"gopher", &url.URL{Scheme:"gopher", Host:"testProxy"},
-		&proxy{protocol:"gopher", host:"testProxy", port:8080, user:nil, src:"Test"}, nil,
+		"gopher", &url.URL{Scheme: "gopher", Host: "testProxy"},
+		&proxy{protocol: "gopher", host: "testProxy", port: 8080, user: nil, src: "Test"}, nil,
 	},
 	// 0 port
 	{
-		"https", &url.URL{Scheme:"https", Host:"testProxy:0"},
-		&proxy{protocol:"https", host:"testProxy", port:8443, user:nil, src:"Test"}, nil,
+		"https", &url.URL{Scheme: "https", Host: "testProxy:0"},
+		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// No URL protocol
 	{
-		"https", &url.URL{Host:"testProxy"},
-		&proxy{protocol:"https", host:"testProxy", port: 8443, src:"Test"}, nil,
+		"https", &url.URL{Host: "testProxy"},
+		&proxy{protocol: "https", host: "testProxy", port: 8443, src: "Test"}, nil,
 	},
 	// Uppercase expected protocol
 	{
-		" HTTPS ", &url.URL{Scheme:"https", Host:"testProxy"},
-		&proxy{protocol:"https", host:"testProxy", port:8443, user:nil, src:"Test"}, nil,
+		" HTTPS ", &url.URL{Scheme: "https", Host: "testProxy"},
+		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// Uppercase and whitespace URL protocol
 	{
-		" https ", &url.URL{Scheme:"  HTTPS  ", Host:"testProxy"},
-		&proxy{protocol:"https", host:"testProxy", port:8443, user:nil, src:"Test"}, nil,
+		" https ", &url.URL{Scheme: "  HTTPS  ", Host: "testProxy"},
+		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// No expected protocol
 	{
-		" ", &url.URL{Scheme:"https", Host:"testProxy"},
-		&proxy{protocol:"https", host:"testProxy", port:8443, user:nil, src:"Test"}, nil,
+		" ", &url.URL{Scheme: "https", Host: "testProxy"},
+		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// Mis-matched protocol
 	{
-		"http", &url.URL{Scheme:"https", Host:""},
+		"http", &url.URL{Scheme: "https", Host: ""},
 		nil, errors.New("expected protocol \"http\", got \"https\""),
 	},
 	// Invalid port
 	{
-		"https", &url.URL{Scheme:"https", Host:"testProxy:testPort"},
+		"https", &url.URL{Scheme: "https", Host: "testProxy:testPort"},
 		nil, errors.New("SplitHostPort testProxy:testPort: strconv.ParseUint: parsing \"testPort\": invalid syntax"),
 	},
 	// Negative port
 	{
-		"https", &url.URL{Scheme:"https", Host:"testProxy:-1"},
+		"https", &url.URL{Scheme: "https", Host: "testProxy:-1"},
 		nil, errors.New("SplitHostPort testProxy:-1: strconv.ParseUint: parsing \"-1\": invalid syntax"),
 	},
 	// Empty host
 	{
-		"https", &url.URL{Scheme:"https", Host:""},
+		"https", &url.URL{Scheme: "https", Host: ""},
 		nil, errors.New("empty host"),
 	},
 	// Nil URL
@@ -101,6 +101,7 @@ var dataNewProxy = []struct {
 		nil, errors.New("nil URL"),
 	},
 }
+
 func TestNewProxy(t *testing.T) {
 	for _, tt := range dataNewProxy {
 		var tName = tt.protocol + " "
@@ -129,10 +130,10 @@ func TestNewProxy(t *testing.T) {
 }
 
 var dataUsername = []struct {
-	u				*url.Userinfo
-	expectUsername	string
-	expectExists	bool
-} {
+	u              *url.Userinfo
+	expectUsername string
+	expectExists   bool
+}{
 	{
 		url.User("user1"), "user1", true,
 	},
@@ -157,7 +158,7 @@ func TestProxy_Username(t *testing.T) {
 		}
 		t.Run(tName, func(t *testing.T) {
 			a := assert.New(t)
-			username, exists := (&proxy{user:tt.u}).Username()
+			username, exists := (&proxy{user: tt.u}).Username()
 			a.Equal(tt.expectUsername, username)
 			a.Equal(tt.expectExists, exists)
 		})
@@ -165,10 +166,10 @@ func TestProxy_Username(t *testing.T) {
 }
 
 var dataPassword = []struct {
-	u				*url.Userinfo
-	expectPassword	string
-	expectExists	bool
-} {
+	u              *url.Userinfo
+	expectPassword string
+	expectExists   bool
+}{
 	{
 		url.User("user1"), "", false,
 	},
@@ -196,7 +197,7 @@ func TestProxy_Password(t *testing.T) {
 		}
 		t.Run(tName, func(t *testing.T) {
 			a := assert.New(t)
-			username, exists := (&proxy{user:tt.u}).Password()
+			username, exists := (&proxy{user: tt.u}).Password()
 			a.Equal(tt.expectPassword, username)
 			a.Equal(tt.expectExists, exists)
 		})
@@ -204,28 +205,28 @@ func TestProxy_Password(t *testing.T) {
 }
 
 var dataURL = []struct {
-	p			Proxy
-	expectU		*url.URL
-	expectStr	string
-} {
+	p         Proxy
+	expectU   *url.URL
+	expectStr string
+}{
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.UserPassword("user1", "password1"), src:"Test"},
-		&url.URL{Scheme:"https", Host:"testProxy:8999", User:url.UserPassword("user1", "password1")},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.UserPassword("user1", "password1"), src: "Test"},
+		&url.URL{Scheme: "https", Host: "testProxy:8999", User: url.UserPassword("user1", "password1")},
 		"https://user1:password1@testProxy:8999",
 	},
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.User("user1"), src:"Test"},
-		&url.URL{Scheme:"https", Host:"testProxy:8999", User:url.User("user1")},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.User("user1"), src: "Test"},
+		&url.URL{Scheme: "https", Host: "testProxy:8999", User: url.User("user1")},
 		"https://user1@testProxy:8999",
 	},
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999},
-		&url.URL{Scheme:"https", Host:"testProxy:8999"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999},
+		&url.URL{Scheme: "https", Host: "testProxy:8999"},
 		"https://testProxy:8999",
 	},
 	{
-		&proxy{port:0},
-		&url.URL{Host:":0"},
+		&proxy{port: 0},
+		&url.URL{Host: ":0"},
 		"//:0",
 	},
 }
@@ -243,23 +244,23 @@ func TestProxy_URL(t *testing.T) {
 }
 
 var dataString = []struct {
-	p		Proxy
-	expect 	string
-} {
+	p      Proxy
+	expect string
+}{
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.UserPassword("user1", "password1"), src:"Test"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.UserPassword("user1", "password1"), src: "Test"},
 		"Test|https://<username>:<password>@testProxy:8999",
 	},
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.User("user1"), src:"Test"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.User("user1"), src: "Test"},
 		"Test|https://<username>@testProxy:8999",
 	},
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.User("user1"), src:"Test"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.User("user1"), src: "Test"},
 		"Test|https://<username>@testProxy:8999",
 	},
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, src:"Test"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, src: "Test"},
 		"Test|https://testProxy:8999",
 	},
 	{
@@ -278,15 +279,15 @@ func TestProxy_String(t *testing.T) {
 }
 
 var dataProxyMarshalJSON = []struct {
-	p		Proxy
-	expect 	string
-} {
+	p      Proxy
+	expect string
+}{
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.UserPassword("user1", "password1"), src:"Test"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.UserPassword("user1", "password1"), src: "Test"},
 		"{\"host\":\"testProxy\",\"password\":\"password1\",\"port\":8999,\"protocol\":\"https\",\"src\":\"Test\",\"username\":\"user1\"}",
 	},
 	{
-		&proxy{protocol:"https", host:"testProxy", port:8999, user:url.User("user1"), src:"Test"},
+		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.User("user1"), src: "Test"},
 		"{\"host\":\"testProxy\",\"password\":null,\"port\":8999,\"protocol\":\"https\",\"src\":\"Test\",\"username\":\"user1\"}",
 	},
 	{
