@@ -49,10 +49,10 @@ Returns:
 		* Fragment
 	The given URL string need not be a valid URL
 */
-func ParseTargetURL(targetUrl, defaultScheme string) (*url.URL) {
+func ParseTargetURL(targetUrl, defaultScheme string) *url.URL {
 	parsedUrl, err := ParseURL(targetUrl, defaultScheme)
 	if err != nil {
-		return &url.URL{Host:"*"}
+		return &url.URL{Host: "*"}
 	}
 	if parsedUrl.Host == "" {
 		parsedUrl.Host = "*"
@@ -116,16 +116,16 @@ Returns:
 	Returns true if the host references a loop back address, false otherwise.
 */
 //noinspection SpellCheckingInspection
-func IsLoopbackHost(host string) (bool) {
+func IsLoopbackHost(host string) bool {
 	host = strings.TrimSpace(host)
 	if host == "localhost" {
 		return true
 	}
 	// Get raw IPv6 value if present in the host
 	if len(host) >= 2 && host[0] == '[' && host[len(host)-1] == ']' {
-		host = host[1:len(host)-1]
+		host = host[1 : len(host)-1]
 	}
-	if ip := net.ParseIP(host) ; ip != nil && ip.IsLoopback() {
+	if ip := net.ParseIP(host); ip != nil && ip.IsLoopback() {
 		return true
 	}
 	return false

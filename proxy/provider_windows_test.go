@@ -19,9 +19,9 @@ import (
 )
 
 var dataProviderWindowsParseLpszProxy = []struct {
-	lpszProxy	string
-	expect		string
-} {
+	lpszProxy string
+	expect    string
+}{
 	{"1.2.3.4:8443", "1.2.3.4:8443"},
 	{"1.2.3.4:8443;4.5.6.7:8999", "4.5.6.7:8999"},
 	{"1.2.3.4:8443;http=4.5.6.7:8999", "1.2.3.4:8443"},
@@ -41,45 +41,45 @@ func TestProviderWindows_ParseLpszProxy(t *testing.T) {
 }
 
 var dataProviderWindowsIsLpszProxyBypass = []struct {
-	targetUrl	*url.URL
-	proxyBypass	string
-	expect		bool
+	targetUrl   *url.URL
+	proxyBypass string
+	expect      bool
 }{
 	// nil URL will be Host:*
 	{nil, "someHost.com", false},
 	// Invalid host will be Host:*
-	{&url.URL{Host:"test:test"}, "someHost.com", false},
+	{&url.URL{Host: "test:test"}, "someHost.com", false},
 	// Empty proxyBypass values
-	{&url.URL{Host:"test:8080"}, "  ", false},
-	{&url.URL{Host:"test:8080"}, ";", false},
+	{&url.URL{Host: "test:8080"}, "  ", false},
+	{&url.URL{Host: "test:8080"}, ";", false},
 	// Matched
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "rapid7.com", true},
 	// Matched - Sub Domain
-	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, ".rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com:443"}, ".rapid7.com", true},
 	// Matched - Wildcard Prefix
-	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, "*.rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com:443"}, "*.rapid7.com", true},
 	// Matched - Multiple wildcards
-	{&url.URL{Host:"test.endpoint.rapid7.com:443"}, "test.*.*.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com:443"}, "test.*.*.com", true},
 	// Matched - Second value
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "someHost;rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "someHost;rapid7.com", true},
 	// Matched - Just wildcard
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "*", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "*", true},
 	// Matched - Wildcard second
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, ";*", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, ";*", true},
 	// Exact match
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "test.endpoint.rapid7.com", true},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "test.endpoint.rapid7.com", true},
 	// Matched - Local Host
-	{&url.URL{Host:"localhost"}, "<local>", true},
+	{&url.URL{Host: "localhost"}, "<local>", true},
 	// Matched - Local Host second
-	{&url.URL{Host:"localhost"}, "someHost;<local>", true},
+	{&url.URL{Host: "localhost"}, "someHost;<local>", true},
 	// Matched - Local IPv4
-	{&url.URL{Host:"[::1]"}, "<local>", true},
+	{&url.URL{Host: "[::1]"}, "<local>", true},
 	// Matched - Local IPv6
-	{&url.URL{Host:"127.0.0.1"}, "<local>", true},
+	{&url.URL{Host: "127.0.0.1"}, "<local>", true},
 	// Not Matched
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "someHost", false},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "someHost", false},
 	// Not Matched - Not local
-	{&url.URL{Host:"test.endpoint.rapid7.com"}, "<local>", false},
+	{&url.URL{Host: "test.endpoint.rapid7.com"}, "<local>", false},
 }
 
 func TestProviderWindows_IsLpszProxyBypass(t *testing.T) {
@@ -99,7 +99,7 @@ func TestProviderWindows_IsLpszProxyBypass(t *testing.T) {
 	}
 }
 
-func newWindowsTestProvider() (*providerWindows) {
+func newWindowsTestProvider() *providerWindows {
 	c := new(providerWindows)
 	c.init("")
 	return c

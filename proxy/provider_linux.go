@@ -20,8 +20,8 @@ type providerLinux struct {
 Create a new Provider which is used to retrieve Proxy configurations.
 Params:
 	configFile: Optional. Path to a configuration file which specifies proxies.
- */
-func NewProvider(configFile string) (Provider) {
+*/
+func NewProvider(configFile string) Provider {
 	c := new(providerLinux)
 	c.init(configFile)
 	return c
@@ -40,7 +40,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerLinux) Get(protocol string, targetUrlStr string) (Proxy) {
+func (p *providerLinux) Get(protocol string, targetUrlStr string) Proxy {
 	return p.provider.get(protocol, ParseTargetURL(targetUrlStr, protocol))
 }
 
@@ -56,6 +56,6 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerLinux) GetHTTPS(targetUrl string) (Proxy) {
+func (p *providerLinux) GetHTTPS(targetUrl string) Proxy {
 	return p.Get("https", targetUrl)
 }

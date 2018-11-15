@@ -32,8 +32,8 @@ type providerDarwin struct {
 Create a new Provider which is used to retrieve Proxy configurations.
 Params:
 	configFile: Optional. Path to a configuration file which specifies proxies.
- */
-func NewProvider(configFile string) (Provider) {
+*/
+func NewProvider(configFile string) Provider {
 	c := new(providerDarwin)
 	c.init(configFile)
 	return c
@@ -53,7 +53,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerDarwin) Get(protocol string, targetUrlStr string) (Proxy) {
+func (p *providerDarwin) Get(protocol string, targetUrlStr string) Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
 	if proxy := p.provider.get(protocol, targetUrl); proxy != nil {
 		return proxy
@@ -74,7 +74,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerDarwin) GetHTTPS(targetUrl string) (Proxy) {
+func (p *providerDarwin) GetHTTPS(targetUrl string) Proxy {
 	return p.Get("https", targetUrl)
 }
 
@@ -88,12 +88,12 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerDarwin) readDarwinNetworkSettingProxy(protocol string, targetUrl *url.URL) (Proxy) {
+func (p *providerDarwin) readDarwinNetworkSettingProxy(protocol string, targetUrl *url.URL) Proxy {
 	proxy, err := p.parseScutildata(protocol, targetUrl, "scutil", "--proxy")
 	if err != nil {
-		if isNotFound(err){
+		if isNotFound(err) {
 			log.Printf("[proxy.Provider.readDarwinNetworkSettingProxy]: %s proxy is not enabled.\n", protocol)
-		}else if isTimedOut(err){
+		} else if isTimedOut(err) {
 			log.Printf("[proxy.Provider.readDarwinNetworkSettingProxy]: Operation timed out. \n")
 		} else {
 			log.Printf("[proxy.Provider.readDarwinNetworkSettingProxy]: Failed to parse Scutil data, %s\n", err)
@@ -117,7 +117,7 @@ Returns:
 func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, name string, arg ...string) (Proxy, error) {
 	lookupProtocol := strings.ToUpper(protocol) // to cover search for http, HTTP, https, HTTPS
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 1) // Die after one second
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1) // Die after one second
 	defer cancel()
 
 	cmd := p.proc(ctx, name, arg...)
@@ -157,7 +157,7 @@ func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, na
 
 	for scanner.Scan() {
 		str := strings.Replace(scanner.Text(), " ", "", -1) // removing spaces
-		if !bypassProxyEnable { // don't search if already found
+		if !bypassProxyEnable {                             // don't search if already found
 			bypassProxyListFound := regexBypassProxy.FindStringIndex(str)
 			if bypassProxyListFound != nil {
 				bypassProxyEnable = true
@@ -205,7 +205,7 @@ func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, na
 	if bypassProxyEnable == false {
 		return proxy, nil
 	}
-	proxyBypass , err := p.readScutilBypassProxy(scutilData)
+	proxyBypass, err := p.readScutilBypassProxy(scutilData)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +245,7 @@ func (p *providerDarwin) readScutilBypassProxy(scutilData string) (string, error
 		if firstLine == -1 { // skip the first line
 			firstLine = 0
 			continue
- 		}
+		}
 		str := strings.Replace(scanner.Text(), " ", "", -1) // removing spaces
 		s := fmt.Sprintf("%d:", firstLine)
 		regexProxy, err := regexp.Compile(s)

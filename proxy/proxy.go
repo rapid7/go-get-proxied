@@ -22,14 +22,14 @@ import (
 
 /*
 Represents a Proxy which can be used to proxy communications.
- */
+*/
 type Proxy interface {
 	// The Proxy's protocol
-	Protocol() (string)
+	Protocol() string
 	// The Proxy's host (hostname or IP)
-	Host() (string)
+	Host() string
 	// The Proxy's port
-	Port() (uint16)
+	Port() uint16
 	// username, true: A username was specified
 	// username, false: A username was not specified, username should be considered "nil"
 	Username() (string, bool)
@@ -37,34 +37,34 @@ type Proxy interface {
 	// password, false: A password was not specified, password should be considered "nil"
 	Password() (string, bool)
 	// Human readable location where this Proxy was found
-	Src() (string)
+	Src() string
 	// A fully qualified URL for this Proxy
-	URL() (*url.URL)
+	URL() *url.URL
 	// A human readable representation of this Proxy. User info (if any) will be obfuscated. Use URL() if you need the URL with user info.
-	String() (string)
+	String() string
 	MarshalJSON() ([]byte, error)
 	toMap() map[string]interface{}
 }
 
 func NewProxy(protocol string, u *url.URL, src string) (Proxy, error) {
 	proxy := new(proxy)
-	if err := proxy.init(protocol, u, src) ; err != nil {
+	if err := proxy.init(protocol, u, src); err != nil {
 		return nil, err
 	}
 	return proxy, nil
 }
 
-var defaultPorts = map[string]uint16 { "": 8080, "https": 8443 }
+var defaultPorts = map[string]uint16{"": 8080, "https": 8443}
 
 type proxy struct {
-	protocol	string
-	host		string
-	port		uint16
-	user		*url.Userinfo
-	src			string
+	protocol string
+	host     string
+	port     uint16
+	user     *url.Userinfo
+	src      string
 }
 
-func (p *proxy) init(protocol string, u *url.URL, src string) (error) {
+func (p *proxy) init(protocol string, u *url.URL, src string) error {
 	if u == nil {
 		return errors.New("nil URL")
 	}
@@ -100,15 +100,15 @@ func (p *proxy) init(protocol string, u *url.URL, src string) (error) {
 	return nil
 }
 
-func (p *proxy) Protocol() (string) {
+func (p *proxy) Protocol() string {
 	return p.protocol
 }
 
-func (p *proxy) Host() (string) {
+func (p *proxy) Host() string {
 	return p.host
 }
 
-func (p *proxy) Port() (uint16) {
+func (p *proxy) Port() uint16 {
 	return p.port
 }
 
@@ -126,11 +126,11 @@ func (p *proxy) Password() (string, bool) {
 	return p.user.Password()
 }
 
-func (p *proxy) Src() (string) {
+func (p *proxy) Src() string {
 	return p.src
 }
 
-func (p *proxy) URL() (*url.URL) {
+func (p *proxy) URL() *url.URL {
 	return &url.URL{
 		Scheme: p.Protocol(),
 		Host:   fmt.Sprintf("%s:%d", p.Host(), p.Port()),
@@ -138,10 +138,10 @@ func (p *proxy) URL() (*url.URL) {
 	}
 }
 
-func (p *proxy) String() (string) {
+func (p *proxy) String() string {
 	var auth string
-	if _, exists := p.Username() ; exists {
-		if _, exists := p.Password() ; exists {
+	if _, exists := p.Username(); exists {
+		if _, exists := p.Password(); exists {
 			auth = "<username>:<password>@"
 		} else {
 			auth = "<username>@"
@@ -154,19 +154,19 @@ func (p *proxy) MarshalJSON() ([]byte, error) {
 	return json.Marshal(p.toMap())
 }
 
-func (p *proxy) toMap() (map[string]interface{}) {
-	m := map[string]interface{} {
+func (p *proxy) toMap() map[string]interface{} {
+	m := map[string]interface{}{
 		"protocol": p.Protocol(),
 		"host":     p.Host(),
 		"port":     p.Port(),
 		"src":      p.Src(),
 	}
-	if usernameStr, exists := p.Username() ; exists {
+	if usernameStr, exists := p.Username(); exists {
 		m["username"] = usernameStr
 	} else {
 		m["username"] = nil
 	}
-	if passwordStr, exists := p.Password() ; exists {
+	if passwordStr, exists := p.Password(); exists {
 		m["password"] = passwordStr
 	} else {
 		m["password"] = nil

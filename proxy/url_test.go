@@ -20,31 +20,31 @@ import (
 )
 
 var dataParseURL = []struct {
-	rawUrl 			string
-	defaultScheme 	string
-	expectUrl 		*url.URL
-	expectError 	error
+	rawUrl        string
+	defaultScheme string
+	expectUrl     *url.URL
+	expectError   error
 }{
-	{"https://test", "", &url.URL{Scheme:"https", Host:"test"}, nil},
-	{"https://test:8080", "", &url.URL{Scheme:"https", Host:"test:8080"}, nil},
-	{"https://1.2.3.4:8080", "", &url.URL{Scheme:"https", Host:"1.2.3.4:8080"}, nil},
-	{"https://1.2.3.4:8080?test123= v1&test456", "", &url.URL{Scheme:"https", Host:"1.2.3.4:8080", RawQuery:"test123= v1&test456"}, nil},
-	{"https://1.2.3.4:8080?test123= v1&test456#fragment1", "", &url.URL{Scheme:"https", Host:"1.2.3.4:8080", RawQuery:"test123= v1&test456", Fragment:"fragment1"}, nil},
-	{"https://1.2.3.4:8080#fragment1", "", &url.URL{Scheme:"https", Host:"1.2.3.4:8080", Fragment:"fragment1"}, nil},
-	{"https://username:password@1.2.3.4:8080", "", &url.URL{Scheme:"https", Host:"1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
+	{"https://test", "", &url.URL{Scheme: "https", Host: "test"}, nil},
+	{"https://test:8080", "", &url.URL{Scheme: "https", Host: "test:8080"}, nil},
+	{"https://1.2.3.4:8080", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080"}, nil},
+	{"https://1.2.3.4:8080?test123= v1&test456", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", RawQuery: "test123= v1&test456"}, nil},
+	{"https://1.2.3.4:8080?test123= v1&test456#fragment1", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", RawQuery: "test123= v1&test456", Fragment: "fragment1"}, nil},
+	{"https://1.2.3.4:8080#fragment1", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", Fragment: "fragment1"}, nil},
+	{"https://username:password@1.2.3.4:8080", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
 	// No scheme
-	{"1.2.3.4:8080", "", &url.URL{Host:"1.2.3.4:8080"}, nil},
+	{"1.2.3.4:8080", "", &url.URL{Host: "1.2.3.4:8080"}, nil},
 	// No scheme with default
-	{"1.2.3.4:8080", "https", &url.URL{Scheme:"https", Host:"1.2.3.4:8080"}, nil},
+	{"1.2.3.4:8080", "https", &url.URL{Scheme: "https", Host: "1.2.3.4:8080"}, nil},
 	// No scheme with query
-	{"1.2.3.4:8080?test123= v1&test456", "", &url.URL{Host:"1.2.3.4:8080", RawQuery:"test123= v1&test456"}, nil},
+	{"1.2.3.4:8080?test123= v1&test456", "", &url.URL{Host: "1.2.3.4:8080", RawQuery: "test123= v1&test456"}, nil},
 	// No scheme with query and fragment
-	{"1.2.3.4:8080?test123= v1&test456#fragment1", "", &url.URL{Host:"1.2.3.4:8080", RawQuery:"test123= v1&test456", Fragment:"fragment1"}, nil},
+	{"1.2.3.4:8080?test123= v1&test456#fragment1", "", &url.URL{Host: "1.2.3.4:8080", RawQuery: "test123= v1&test456", Fragment: "fragment1"}, nil},
 	// Whitespace
-	{"  https://test  ", "", &url.URL{Scheme:"https",Host:"test"}, nil},
+	{"  https://test  ", "", &url.URL{Scheme: "https", Host: "test"}, nil},
 	// Empty
 	{"", "", &url.URL{}, nil},
-	{"", "https", &url.URL{Scheme:"https"}, nil},
+	{"", "https", &url.URL{Scheme: "https"}, nil},
 	// Invalid cases
 	{"://test:8080", "", nil, errors.New("parse ://test:8080: missing protocol scheme")},
 	// TODO These error cases are introduced after Go 1.7
@@ -74,31 +74,31 @@ func TestParseURL(t *testing.T) {
 }
 
 var dataParseTargetURL = []struct {
-	rawUrl string
+	rawUrl    string
 	expectUrl *url.URL
 }{
-	{"https://test", &url.URL{Scheme:"https", Host:"test"}},
-	{"https://test:8080", &url.URL{Scheme:"https", Host:"test:8080"}},
-	{"https://1.2.3.4:8080", &url.URL{Scheme:"https", Host:"1.2.3.4:8080"}},
-	{"https://1.2.3.4?test123=v1&test456", &url.URL{Scheme:"https", Host:"1.2.3.4"}},
-	{"https://1.2.3.4?test123=v1&test456#fragment1", &url.URL{Scheme:"https", Host:"1.2.3.4"}},
-	{"https://1.2.3.4#fragment1", &url.URL{Scheme:"https", Host:"1.2.3.4"}},
-	{"https://username:password@1.2.3.4:8080", &url.URL{Scheme:"https", Host:"1.2.3.4:8080"}},
+	{"https://test", &url.URL{Scheme: "https", Host: "test"}},
+	{"https://test:8080", &url.URL{Scheme: "https", Host: "test:8080"}},
+	{"https://1.2.3.4:8080", &url.URL{Scheme: "https", Host: "1.2.3.4:8080"}},
+	{"https://1.2.3.4?test123=v1&test456", &url.URL{Scheme: "https", Host: "1.2.3.4"}},
+	{"https://1.2.3.4?test123=v1&test456#fragment1", &url.URL{Scheme: "https", Host: "1.2.3.4"}},
+	{"https://1.2.3.4#fragment1", &url.URL{Scheme: "https", Host: "1.2.3.4"}},
+	{"https://username:password@1.2.3.4:8080", &url.URL{Scheme: "https", Host: "1.2.3.4:8080"}},
 	// whitespace
-	{"  https://test  ", &url.URL{Scheme:"https", Host:"test"}},
+	{"  https://test  ", &url.URL{Scheme: "https", Host: "test"}},
 	// host
-	{"test", &url.URL{Scheme:"", Host:"test"}},
+	{"test", &url.URL{Scheme: "", Host: "test"}},
 	// host port
-	{"test:8080", &url.URL{Scheme:"", Host:"test:8080"}},
+	{"test:8080", &url.URL{Scheme: "", Host: "test:8080"}},
 	// host and query params
-	{"test:8080?Test123=v1", &url.URL{Scheme:"", Host:"test:8080"}},
+	{"test:8080?Test123=v1", &url.URL{Scheme: "", Host: "test:8080"}},
 	// host, query params, and fragment
-	{"test:8080?Test123=v1#fragment1", &url.URL{Scheme:"", Host:"test:8080"}},
+	{"test:8080?Test123=v1#fragment1", &url.URL{Scheme: "", Host: "test:8080"}},
 	// Invalid cases
-	{"", &url.URL{Scheme:"", Host:"*"}},
-	{"*", &url.URL{Scheme:"", Host:"*"}},
-	{"  *  ", &url.URL{Scheme:"", Host:"*"}},
-	{"://test:8080", &url.URL{Scheme:"", Host:"*"}},
+	{"", &url.URL{Scheme: "", Host: "*"}},
+	{"*", &url.URL{Scheme: "", Host: "*"}},
+	{"  *  ", &url.URL{Scheme: "", Host: "*"}},
+	{"://test:8080", &url.URL{Scheme: "", Host: "*"}},
 	// TODO These error cases are introduced after Go 1.7
 	//{"https://[test:8080", "https://[test:8080"},
 	//{"https://username:1412¶45124@test:8080", "https://username:1412¶45124@test:8080"},
@@ -114,10 +114,10 @@ func TestParseTargetURL(t *testing.T) {
 }
 
 var dataPrefixScheme = []struct {
-	rawUrl		 	string
-	defaultScheme	string
-	expectUrlStr	string
-} {
+	rawUrl        string
+	defaultScheme string
+	expectUrlStr  string
+}{
 	// No scheme
 	{"test123", "", "//test123"},
 	{"test123", "https", "https://test123"},
@@ -145,30 +145,30 @@ func TestPrefixScheme(t *testing.T) {
 }
 
 var dataSplitHostPort = []struct {
-	u 			*url.URL
-	expectHost 	string
-	expectPort 	uint16
-	expectErr 	error
-} {
+	u          *url.URL
+	expectHost string
+	expectPort uint16
+	expectErr  error
+}{
 	// hostname
-	{&url.URL{Host:"test:8080"}, "test", 8080, nil},
-	{&url.URL{Host:"test"}, "test", 0, nil},
+	{&url.URL{Host: "test:8080"}, "test", 8080, nil},
+	{&url.URL{Host: "test"}, "test", 0, nil},
 	// ipv4
-	{&url.URL{Host:"1.2.3.4:8080"}, "1.2.3.4", 8080, nil},
-	{&url.URL{Host:"1.2.3.4"}, "1.2.3.4", 0, nil},
+	{&url.URL{Host: "1.2.3.4:8080"}, "1.2.3.4", 8080, nil},
+	{&url.URL{Host: "1.2.3.4"}, "1.2.3.4", 0, nil},
 	// ipv6
-	{&url.URL{Host:"[2001:0db8:85a3:0000:0000:8a2e:0370:7333]"}, "[2001:0db8:85a3:0000:0000:8a2e:0370:7333]", 0, nil},
-	{&url.URL{Host:"[2001:0db8:85a3:0000:0000:8a2e:0370:7333]:8080"}, "[2001:0db8:85a3:0000:0000:8a2e:0370:7333]", 8080, nil},
+	{&url.URL{Host: "[2001:0db8:85a3:0000:0000:8a2e:0370:7333]"}, "[2001:0db8:85a3:0000:0000:8a2e:0370:7333]", 0, nil},
+	{&url.URL{Host: "[2001:0db8:85a3:0000:0000:8a2e:0370:7333]:8080"}, "[2001:0db8:85a3:0000:0000:8a2e:0370:7333]", 8080, nil},
 	// port Min
-	{&url.URL{Host:"test:0"}, "test", 0, nil},
+	{&url.URL{Host: "test:0"}, "test", 0, nil},
 	// port Max
-	{&url.URL{Host:"test:65535"}, "test", 65535, nil},
+	{&url.URL{Host: "test:65535"}, "test", 65535, nil},
 	// Invalid - port NaN
-	{&url.URL{Host:"test1:test2"}, "", 0, errors.New("SplitHostPort test1:test2: strconv.ParseUint: parsing \"test2\": invalid syntax")},
+	{&url.URL{Host: "test1:test2"}, "", 0, errors.New("SplitHostPort test1:test2: strconv.ParseUint: parsing \"test2\": invalid syntax")},
 	// Invalid - port Exceeded
-	{&url.URL{Host:"test1:65536"}, "", 0, errors.New("SplitHostPort test1:65536: strconv.ParseUint: parsing \"65536\": value out of range")},
+	{&url.URL{Host: "test1:65536"}, "", 0, errors.New("SplitHostPort test1:65536: strconv.ParseUint: parsing \"65536\": value out of range")},
 	// Invalid - port signed
-	{&url.URL{Host:"test1:-1"}, "", 0, errors.New("SplitHostPort test1:-1: strconv.ParseUint: parsing \"-1\": invalid syntax")},
+	{&url.URL{Host: "test1:-1"}, "", 0, errors.New("SplitHostPort test1:-1: strconv.ParseUint: parsing \"-1\": invalid syntax")},
 	// Invalid - nil URL
 	{nil, "", 0, errors.New("SplitHostPort nil: nil URL")},
 }
@@ -198,9 +198,9 @@ func TestSplitHostPort(t *testing.T) {
 }
 
 var dataIsLoopbackHost = []struct {
-	host 	string
-	expect	bool
-} {
+	host   string
+	expect bool
+}{
 	{"localhost", true},
 	{"  localhost  ", true},
 	{"127.0.0.1", true},

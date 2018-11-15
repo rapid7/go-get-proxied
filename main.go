@@ -29,10 +29,10 @@ func main() {
 	quietP := flag.Bool("q", false, "Optional. Quiet mode; only write the URL of a proxy to stdout (if found). Default: false")
 	flag.Parse()
 	var (
-		protocol 	string
-		config 		string
-		target 		string
-		quiet 		bool
+		protocol string
+		config   string
+		target   string
+		quiet    bool
 	)
 	if protocolP != nil {
 		protocol = *protocolP
