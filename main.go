@@ -53,9 +53,8 @@ func main() {
 	var exit int
 	if p != nil {
 		if !quiet {
-			fmt.Printf("Proxy: %s\n", p)
 			b, _ := json.MarshalIndent(p, "", "   ")
-			fmt.Printf("Proxy JSON: %s", string(b))
+			fmt.Println(string(b))
 		} else {
 			println(p.URL().String())
 		}
