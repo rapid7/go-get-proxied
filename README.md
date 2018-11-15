@@ -44,8 +44,7 @@ Current WinHTTP proxy settings:
     Proxy Server(s) :  testProxy:8999
     Bypass List     :  (none)
 > ./proxymain.exe
-Proxy: WinHTTP:WinHttpDefault|https://testProxy:8999
-Proxy JSON: {
+{
    "host": "testProxy",
    "password": null,
    "port": 8999,
@@ -61,8 +60,7 @@ https://testProxy:8999
 > ./proxymain -c proxy.config -q
 https://testProxy:8999
 > ./proxymain -c proxy.config
-Proxy: ConfigurationFile|https://testProxy:8999
-Proxy JSON: {
+{
    "host": "testProxy",
    "password": null,
    "port": 8999,
