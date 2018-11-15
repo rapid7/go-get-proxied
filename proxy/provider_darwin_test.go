@@ -307,7 +307,7 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 	protocol = "http"
 	for _, tests := range bypassProxySettingsHostsDomains {
 		for _, test := range tests {
-			for urlStr, _ := range test {
+			for urlStr := range test {
 				targetUrl := ParseTargetURL(urlStr, "")
 				expectedProxy, err := c.parseScutildata(protocol, targetUrl, "echo", command)
 				// test error is returned correctly
