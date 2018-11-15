@@ -1,6 +1,8 @@
 go-get-proxied - Cross platform proxy configurations
 ================================
 
+[![Build Status](https://travis-ci.org/rapid7/go-get-proxied.svg)](https://travis-ci.org/rapid7/go-get-proxied)
+
 Go code (golang) package which facilitates the retrieval of system proxy configurations.
 
 #### Installation
