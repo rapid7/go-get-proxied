@@ -52,6 +52,7 @@ func main() {
 		verbose = *verboseP
 	}
 	if verbose {
+		log.SetFlags(0)
 		log.SetOutput(os.Stderr)
 	} else {
 		log.SetOutput(ioutil.Discard)
