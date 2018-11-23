@@ -1,0 +1,6 @@
+*.o
+*.a
+*.so
+*.exe
+.DS_Store
+go-get-proxied
