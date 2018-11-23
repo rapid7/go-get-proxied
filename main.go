@@ -26,13 +26,15 @@ func main() {
 	protocolP := flag.String("p", "https", "Optional. The proxy protocol you wish to lookup. Default: https")
 	configP := flag.String("c", "", "Optional. Path to configuration file.")
 	targetP := flag.String("t", "", "Optional. Target URL which the proxy will be used for. Default: *")
-	quietP := flag.Bool("q", false, "Optional. Quiet mode; only write the URL of a proxy to stdout (if found). Default: false")
+	jsonP := flag.Bool("j", false, "Optional. If a proxy is found, write it as JSON instead of a URL.")
+	verboseP := flag.Bool("v", false, "Optional. If set, log content will be sent to stderr.")
 	flag.Parse()
 	var (
 		protocol string
 		config   string
 		target   string
-		quiet    bool
+		jsonOut  bool
+		verbose  bool
 	)
 	if protocolP != nil {
 		protocol = *protocolP
@@ -43,16 +45,21 @@ func main() {
 	if targetP != nil {
 		target = *targetP
 	}
-	if quietP != nil {
-		quiet = *quietP
+	if jsonP != nil {
+		jsonOut = *jsonP
 	}
-	if quiet {
+	if verboseP != nil {
+		verbose = *verboseP
+	}
+	if verbose {
+		log.SetOutput(os.Stderr)
+	} else {
 		log.SetOutput(ioutil.Discard)
 	}
 	p := proxy.NewProvider(config).Get(protocol, target)
 	var exit int
 	if p != nil {
-		if !quiet {
+		if jsonOut {
 			b, _ := json.MarshalIndent(p, "", "   ")
 			fmt.Println(string(b))
 		} else {
@@ -60,9 +67,6 @@ func main() {
 		}
 	} else {
 		exit = 1
-		if !quiet {
-			println("Proxy: nil")
-		}
 	}
 	os.Exit(exit)
 }
