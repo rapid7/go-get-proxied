@@ -28,17 +28,17 @@ var dataProviderReadConfigFileProxy = []struct {
 	expected Proxy
 }{
 	// Typical
-	{"{\"https\": \"1.2.3.4:8080\"}", &proxy{protocol: "https", host: "1.2.3.4", port: 8080, src: "ConfigurationFile"}},
+	{"{\"https\": \"1.2.3.4:8080\"}", &proxy{protocol: "", host: "1.2.3.4", port: 8080, src: "ConfigurationFile"}},
 	// No port
-	{"{\"https\": \"1.2.3.4\"}", &proxy{protocol: "https", host: "1.2.3.4", port: 8443, src: "ConfigurationFile"}},
+	{"{\"https\": \"1.2.3.4\"}", &proxy{protocol: "", host: "1.2.3.4", port: 8443, src: "ConfigurationFile"}},
 	// Protocol
-	{"{\"https\": \"https://test\"}", &proxy{protocol: "https", host: "test", port: 8443, src: "ConfigurationFile"}},
+	{"{\"https\": \"http://test\"}", &proxy{protocol: "http", host: "test", port: 8443, src: "ConfigurationFile"}},
 	// All caps
-	{"{\"HTTPS\": \"https://test\"}", &proxy{protocol: "https", host: "test", port: 8443, src: "ConfigurationFile"}},
+	{"{\"HTTPS\": \"http://test\"}", &proxy{protocol: "http", host: "test", port: 8443, src: "ConfigurationFile"}},
 	// Multiple - mixed case - uses last entry
-	{"{\"https\": \"https://dontPickMe\", \"HTTPS\": \"https://test\"}", &proxy{protocol: "https", host: "test", port: 8443, src: "ConfigurationFile"}},
+	{"{\"https\": \"http://dontPickMe\", \"HTTPS\": \"http://test\"}", &proxy{protocol: "http", host: "test", port: 8443, src: "ConfigurationFile"}},
 	// Mismatched protocol on https
-	{"{\"https\": \"socks5://test:8080\"}", nil},
+	{"{\"https\": \"socks5://test:8080\"}", &proxy{protocol: "socks5", host: "test", port: 8080, src: "ConfigurationFile"}},
 	// Invalid URL
 	{"{\"https\": \"   \"}", nil},
 	// Another protocol
@@ -146,6 +146,7 @@ func TestProvider_ParseConfigFileProxies_tooLarge(t *testing.T) {
 
 var dataProviderReadSystemEnvProxiesAll = []struct {
 	env       map[string]string
+	protocol  string
 	targetUrl *url.URL
 	expect    Proxy
 }{
@@ -153,42 +154,64 @@ var dataProviderReadSystemEnvProxiesAll = []struct {
 	{
 		map[string]string{
 			"HTTPS_PROXY": "testUpper:8999",
-			"https_proxy": "HTTPS://testLower",
+			"https_proxy": "HTTP://testLower",
 			"HTTP_PROXY":  "testUpper:8080",
 		},
+		"https",
 		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
-		newTestProxy("https", "testUpper", 8999, nil, "Environment[HTTPS_PROXY]"),
+		newTestProxy("", "testUpper", 8999, nil, "Environment[HTTPS_PROXY]"),
 	},
 	// Match lower, no proxy does not match
 	{
 		map[string]string{
-			"https_proxy": "HTTPS://testLower",
+			"https_proxy": "HTTP://testLower",
 			"HTTP_PROXY":  "testUpper:8080",
 			"NO_PROXY":    "someHost",
 		},
+		"https",
 		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
-		newTestProxy("https", "testLower", 8443, nil, "Environment[https_proxy]"),
+		newTestProxy("http", "testLower", 8443, nil, "Environment[https_proxy]"),
 	},
 	// Match upper, no proxy matches
 	{
 		map[string]string{
-			"HTTPS_PROXY": "https://testUpper",
+			"HTTPS_PROXY": "http://testUpper",
 			"NO_PROXY":    "rapid7.com",
 		},
-		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
+		"https",
+		&url.URL{Scheme: "http", Host: "test.endpoint.rapid7.com"},
 		nil,
 	},
 	// Match upper, no proxy matches lower
 	{
 		map[string]string{
-			"HTTPS_PROXY": "https://testUpper",
+			"HTTPS_PROXY": "http://testUpper",
 			"no_proxy":    "rapid7.com",
 		},
+		"https",
+		&url.URL{Scheme: "http", Host: "test.endpoint.rapid7.com"},
+		nil,
+	},
+	// Special case for SOCKS, it is replaced with ALL
+	{
+		map[string]string{
+			"SOCKS_PROXY": "socks://testUpper",
+		},
+		"socks",
 		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
 		nil,
 	},
+	// Special case for SOCKS, it is replaced with ALL
 	{
-		map[string]string{}, new(url.URL), nil,
+		map[string]string{
+			"ALL_PROXY": "socks://testUpper",
+		},
+		"socks",
+		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
+		newTestProxy("socks", "testUpper", 8443, nil, "Environment[ALL_PROXY]"),
+	},
+	{
+		map[string]string{}, "https", new(url.URL), nil,
 	},
 }
 
@@ -202,33 +225,30 @@ func TestProvider_ReadSystemEnvProxy(t *testing.T) {
 			}
 			p := newTestProvider("")
 			p.getEnv = getEnv
-			a.Equal(tt.expect, p.readSystemEnvProxy("https", tt.targetUrl))
+			a.Equal(tt.expect, p.readSystemEnvProxy(tt.protocol, tt.targetUrl))
 		})
 	}
 }
 
 var dataProviderParseEnvHTTPSProxy = []struct {
-	protocol    string
 	value       string
 	expectProxy Proxy
 	expectError error
 }{
-	{"https", "https://test", newTestProxy("https", "test", 8443, nil, "Environment[Key]"), nil},
-	{"https", "test:8080", newTestProxy("https", "test", 8080, nil, "Environment[Key]"), nil},
-	{"https", "1.2.3.4:8080", newTestProxy("https", "1.2.3.4", 8080, nil, "Environment[Key]"), nil},
-	{"https", "https://username:password@1.2.3.4:8080", newTestProxy("https", "1.2.3.4", 8080, url.UserPassword("username", "password"), "Environment[Key]"), nil},
-	{"https", "username:password@1.2.3.4:8080", newTestProxy("https", "1.2.3.4", 8080, url.UserPassword("username", "password"), "Environment[Key]"), nil},
-	{"https", "", nil, new(notFoundError)},
-	{"https", "   ", nil, new(notFoundError)},
-	{"https", "HTTPS://test:8080", newTestProxy("https", "test", 8080, nil, "Environment[Key]"), nil},
-	{"gopher", "test:8999", newTestProxy("gopher", "test", 8999, nil, "Environment[Key]"), nil},
+	{"http://test", newTestProxy("http", "test", 8443, nil, "Environment[Key]"), nil},
+	{"test:8080", newTestProxy("", "test", 8080, nil, "Environment[Key]"), nil},
+	{"1.2.3.4:8080", newTestProxy("", "1.2.3.4", 8080, nil, "Environment[Key]"), nil},
+	{"http://username:password@1.2.3.4:8080", newTestProxy("http", "1.2.3.4", 8080, url.UserPassword("username", "password"), "Environment[Key]"), nil},
+	{"username:password@1.2.3.4:8080", newTestProxy("", "1.2.3.4", 8080, url.UserPassword("username", "password"), "Environment[Key]"), nil},
+	{"", nil, new(notFoundError)},
+	{"   ", nil, new(notFoundError)},
+	{"HTTPS://test:8080", newTestProxy("https", "test", 8080, nil, "Environment[Key]"), nil},
+	{"test:8999", newTestProxy("", "test", 8999, nil, "Environment[Key]"), nil},
 	// Invalid
-	{"https", "://test:8080", nil, errors.New("parse ://test:8080: missing protocol scheme")},
+	{"://test:8080", nil, errors.New("parse ://test:8080: missing protocol scheme")},
 	// TODO These error cases are introduced after Go 1.7
 	//{"https", "https://[test:8080", nil, errors.New("parse https://[test:8080: missing ']' in host")},
 	//{"https", "https://username:1412¶45124@test:8080", nil, errors.New("parse https://username:1412¶45124@test:8080: net/url: invalid userinfo")},
-	// Wrong protocol
-	{"gopher", "socks5://test:8080", nil, errors.New("expected protocol \"gopher\", got \"socks5\"")},
 }
 
 func TestProvider_ParseEnvProxy(t *testing.T) {
@@ -241,7 +261,7 @@ func TestProvider_ParseEnvProxy(t *testing.T) {
 			}
 			p := newTestProvider("")
 			p.getEnv = getEnv
-			proxy, err := p.parseEnvProxy(tt.protocol, "Key")
+			proxy, err := p.parseEnvProxy("Key")
 			if tt.expectProxy == nil {
 				a.Nil(proxy)
 			} else {
@@ -263,10 +283,10 @@ var dataProviderParseEnvURL = []struct {
 	expectUrl   *url.URL
 	expectError error
 }{
-	{"https://test", &url.URL{Scheme: "https", Host: "test"}, nil},
+	{"http://test", &url.URL{Scheme: "http", Host: "test"}, nil},
 	{"test:8080", &url.URL{Scheme: "", Host: "test:8080"}, nil},
 	{"1.2.3.4:8080", &url.URL{Scheme: "", Host: "1.2.3.4:8080"}, nil},
-	{"HTTPS://username:password@1.2.3.4:8080", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
+	{"HTTP://username:password@1.2.3.4:8080", &url.URL{Scheme: "http", Host: "1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
 	{"username:password@1.2.3.4:8080", &url.URL{Scheme: "", Host: "1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
 	{"", nil, new(notFoundError)},
 	{"   ", nil, new(notFoundError)},

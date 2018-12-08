@@ -45,37 +45,67 @@ If none is found, or an error occurs, nil is returned.
 This function searches the following locations in the following order:
 	* Configuration file: proxy.config
 	* Environment: HTTPS_PROXY, https_proxy, ...
-	* scutil: The Network settings
 Params:
-	protocol: The proxy's protocol (i.e. https)
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
 func (p *providerDarwin) Get(protocol string, targetUrlStr string) Proxy {
-	targetUrl := ParseTargetURL(targetUrlStr, protocol)
-	if proxy := p.provider.get(protocol, targetUrl); proxy != nil {
-		return proxy
-	}
-	return p.readDarwinNetworkSettingProxy(protocol, targetUrl)
+	return p.provider.get(protocol, ParseTargetURL(targetUrlStr, protocol))
 }
 
 /*
-Returns the HTTPS Proxy configuration for the given targetUrl.
+Returns the Proxy configuration for HTTP traffic and the given targetUrl.
 If none is found, or an error occurs, nil is returned.
-This function searches the following locations in the following order:
-	* Configuration file: proxy.config
-	* Environment: HTTPS_PROXY, https_proxy, ...
-	* scutil: The Network settings
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. http://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerDarwin) GetHTTP(targetUrl string) Proxy {
+	return p.Get("http", targetUrl)
+}
+
+/*
+Returns the Proxy configuration for HTTPS traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
 Params:
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
-	Proxy: A proxy was found
-	nil: A proxy was not found, or an error occurred
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerDarwin) GetHTTPS(targetUrl string) Proxy {
 	return p.Get("https", targetUrl)
+}
+
+/*
+Returns the Proxy configuration for FTP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerDarwin) GetFTP(targetUrl string) Proxy {
+	return p.Get("ftp", targetUrl)
+}
+
+/*
+Returns the Proxy configuration for generic TCP/UDP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerDarwin) GetSOCKS(targetUrl string) Proxy {
+	return p.Get("socks", targetUrl)
 }
 
 /*
@@ -192,12 +222,12 @@ func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, na
 	}
 
 	proxyUrlStr := host + ":" + port
-	proxyUrl, err := ParseURL(proxyUrlStr, protocol)
+	proxyUrl, err := ParseURL(proxyUrlStr, "")
 	if err != nil {
 		return nil, err
 	}
 	src := "State:/Network/Global/Proxies"
-	proxy, err := NewProxy(protocol, proxyUrl, src)
+	proxy, err := NewProxy(proxyUrl, src)
 	if err != nil {
 		return nil, err
 	}

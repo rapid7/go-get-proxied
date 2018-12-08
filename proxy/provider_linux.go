@@ -34,7 +34,7 @@ This function searches the following locations in the following order:
 	* Configuration file: proxy.config
 	* Environment: HTTPS_PROXY, https_proxy, ...
 Params:
-	protocol: The proxy's protocol (i.e. https)
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
 	Proxy: A proxy was found
@@ -45,17 +45,53 @@ func (p *providerLinux) Get(protocol string, targetUrlStr string) Proxy {
 }
 
 /*
-Returns the HTTPS Proxy configuration for the given targetUrl.
+Returns the Proxy configuration for HTTP traffic and the given targetUrl.
 If none is found, or an error occurs, nil is returned.
-This function searches the following locations in the following order:
-	* Configuration file: proxy.config
-	* Environment: HTTPS_PROXY, https_proxy, ...
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. http://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerLinux) GetHTTP(targetUrl string) Proxy {
+	return p.Get("http", targetUrl)
+}
+
+/*
+Returns the Proxy configuration for HTTPS traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
 Params:
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
-	Proxy: A proxy was found
-	nil: A proxy was not found, or an error occurred
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerLinux) GetHTTPS(targetUrl string) Proxy {
 	return p.Get("https", targetUrl)
+}
+
+/*
+Returns the Proxy configuration for FTP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerLinux) GetFTP(targetUrl string) Proxy {
+	return p.Get("ftp", targetUrl)
+}
+
+/*
+Returns the Proxy configuration for generic TCP/UDP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerLinux) GetSOCKS(targetUrl string) Proxy {
+	return p.Get("socks", targetUrl)
 }

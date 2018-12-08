@@ -46,15 +46,15 @@ type Proxy interface {
 	toMap() map[string]interface{}
 }
 
-func NewProxy(protocol string, u *url.URL, src string) (Proxy, error) {
+func NewProxy(u *url.URL, src string) (Proxy, error) {
 	proxy := new(proxy)
-	if err := proxy.init(protocol, u, src); err != nil {
+	if err := proxy.init(u, src); err != nil {
 		return nil, err
 	}
 	return proxy, nil
 }
 
-var defaultPorts = map[string]uint16{"": 8080, "https": 8443}
+var defaultPorts = map[string]uint16{"": 8443, "http": 8443, "https": 8443}
 
 type proxy struct {
 	protocol string
@@ -64,18 +64,11 @@ type proxy struct {
 	src      string
 }
 
-func (p *proxy) init(protocol string, u *url.URL, src string) error {
+func (p *proxy) init(u *url.URL, src string) error {
 	if u == nil {
 		return errors.New("nil URL")
 	}
-	protocol = strings.TrimSpace(strings.ToLower(protocol))
 	scheme := strings.TrimSpace(strings.ToLower(u.Scheme))
-	if scheme != "" {
-		if protocol != "" && scheme != protocol {
-			return errors.New(fmt.Sprintf("expected protocol \"%s\", got \"%s\"", protocol, scheme))
-		}
-		protocol = scheme
-	}
 	host, port, err := SplitHostPort(u)
 	if err != nil {
 		return err
@@ -84,7 +77,7 @@ func (p *proxy) init(protocol string, u *url.URL, src string) error {
 		return errors.New("empty host")
 	}
 	if port == 0 {
-		port = defaultPorts[protocol]
+		port = defaultPorts[scheme]
 	}
 	if port == 0 {
 		port = defaultPorts[""]
@@ -92,7 +85,7 @@ func (p *proxy) init(protocol string, u *url.URL, src string) error {
 	if port == 0 {
 		return errors.New("port undefined")
 	}
-	p.protocol = protocol
+	p.protocol = scheme
 	p.host = host
 	p.port = port
 	p.user = u.User

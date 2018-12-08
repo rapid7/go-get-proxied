@@ -20,99 +20,93 @@ import (
 )
 
 var dataNewProxy = []struct {
-	protocol  string
 	u         *url.URL
 	expectP   Proxy
 	expectErr error
 }{
 	// All input
 	{
-		"https", &url.URL{Scheme: "https", Host: "testProxy:8999", User: url.UserPassword("user1", "password1")},
+		&url.URL{Scheme: "https", Host: "testProxy:8999", User: url.UserPassword("user1", "password1")},
 		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.UserPassword("user1", "password1"), src: "Test"}, nil,
 	},
 	// No password
 	{
-		"https", &url.URL{Scheme: "https", Host: "testProxy:8999", User: url.User("user1")},
+		&url.URL{Scheme: "https", Host: "testProxy:8999", User: url.User("user1")},
 		&proxy{protocol: "https", host: "testProxy", port: 8999, user: url.User("user1"), src: "Test"}, nil,
 	},
 	// No user
 	{
-		"https", &url.URL{Scheme: "https", Host: "testProxy:8999"},
+		&url.URL{Scheme: "https", Host: "testProxy:8999"},
 		&proxy{protocol: "https", host: "testProxy", port: 8999, user: nil, src: "Test"}, nil,
 	},
 	// No port
 	{
-		"https", &url.URL{Scheme: "https", Host: "testProxy"},
+		&url.URL{Scheme: "https", Host: "testProxy"},
 		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
-	// No port - Default protocol
+	// No port - Unknown protocol
 	{
-		"gopher", &url.URL{Scheme: "gopher", Host: "testProxy"},
-		&proxy{protocol: "gopher", host: "testProxy", port: 8080, user: nil, src: "Test"}, nil,
+		&url.URL{Scheme: "gopher", Host: "testProxy"},
+		&proxy{protocol: "gopher", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// 0 port
 	{
-		"https", &url.URL{Scheme: "https", Host: "testProxy:0"},
+		&url.URL{Scheme: "https", Host: "testProxy:0"},
 		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// No URL protocol
 	{
-		"https", &url.URL{Host: "testProxy"},
-		&proxy{protocol: "https", host: "testProxy", port: 8443, src: "Test"}, nil,
+		&url.URL{Host: "testProxy"},
+		&proxy{protocol: "", host: "testProxy", port: 8443, src: "Test"}, nil,
 	},
 	// Uppercase expected protocol
 	{
-		" HTTPS ", &url.URL{Scheme: "https", Host: "testProxy"},
+		&url.URL{Scheme: "https", Host: "testProxy"},
 		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// Uppercase and whitespace URL protocol
 	{
-		" https ", &url.URL{Scheme: "  HTTPS  ", Host: "testProxy"},
+		&url.URL{Scheme: "  HTTPS  ", Host: "testProxy"},
 		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
 	},
 	// No expected protocol
 	{
-		" ", &url.URL{Scheme: "https", Host: "testProxy"},
+		&url.URL{Scheme: "https", Host: "testProxy"},
 		&proxy{protocol: "https", host: "testProxy", port: 8443, user: nil, src: "Test"}, nil,
-	},
-	// Mis-matched protocol
-	{
-		"http", &url.URL{Scheme: "https", Host: ""},
-		nil, errors.New("expected protocol \"http\", got \"https\""),
 	},
 	// Invalid port
 	{
-		"https", &url.URL{Scheme: "https", Host: "testProxy:testPort"},
+		&url.URL{Scheme: "https", Host: "testProxy:testPort"},
 		nil, errors.New("SplitHostPort testProxy:testPort: strconv.ParseUint: parsing \"testPort\": invalid syntax"),
 	},
 	// Negative port
 	{
-		"https", &url.URL{Scheme: "https", Host: "testProxy:-1"},
+		&url.URL{Scheme: "https", Host: "testProxy:-1"},
 		nil, errors.New("SplitHostPort testProxy:-1: strconv.ParseUint: parsing \"-1\": invalid syntax"),
 	},
 	// Empty host
 	{
-		"https", &url.URL{Scheme: "https", Host: ""},
+		&url.URL{Scheme: "https", Host: ""},
 		nil, errors.New("empty host"),
 	},
 	// Nil URL
 	{
-		"https", nil,
+		nil,
 		nil, errors.New("nil URL"),
 	},
 }
 
 func TestNewProxy(t *testing.T) {
 	for _, tt := range dataNewProxy {
-		var tName = tt.protocol + " "
+		var tName string
 		if tt.u == nil {
-			tName = tName + "nil"
+			tName = "nil"
 		} else {
-			tName = tName + tt.u.String()
+			tName = tt.u.String()
 		}
 		t.Run(tName, func(t *testing.T) {
 			a := assert.New(t)
-			p, err := NewProxy(tt.protocol, tt.u, "Test")
+			p, err := NewProxy(tt.u, "Test")
 			if tt.expectP == nil {
 				a.Nil(p)
 			} else {
