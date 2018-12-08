@@ -34,54 +34,54 @@ const (
 
 type Provider interface {
 	/*
-	Returns the Proxy configuration for the given traffic protocol and targetUrl.
-	If none is found, or an error occurs, nil is returned.
-	Params:
-		protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
-		targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
-	Returns:
-		Proxy: A proxy was found.
-		nil: A proxy was not found, or an error occurred.
+		Returns the Proxy configuration for the given traffic protocol and targetUrl.
+		If none is found, or an error occurs, nil is returned.
+		Params:
+			protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
+			targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
+		Returns:
+			Proxy: A proxy was found.
+			nil: A proxy was not found, or an error occurred.
 	*/
 	Get(protocol string, targetUrl string) Proxy
 	/*
-	Returns the Proxy configuration for HTTP traffic and the given targetUrl.
-	If none is found, or an error occurs, nil is returned.
-	Params:
-		targetUrl: The URL the proxy is to be used for. (i.e. http://test.endpoint.rapid7.com)
-	Returns:
-		Proxy: A proxy was found.
-		nil: A proxy was not found, or an error occurred.
+		Returns the Proxy configuration for HTTP traffic and the given targetUrl.
+		If none is found, or an error occurs, nil is returned.
+		Params:
+			targetUrl: The URL the proxy is to be used for. (i.e. http://test.endpoint.rapid7.com)
+		Returns:
+			Proxy: A proxy was found.
+			nil: A proxy was not found, or an error occurred.
 	*/
 	GetHTTP(targetUrl string) Proxy
 	/*
-	Returns the Proxy configuration for HTTPS traffic and the given targetUrl.
-	If none is found, or an error occurs, nil is returned.
-	Params:
-		targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
-	Returns:
-		Proxy: A proxy was found.
-		nil: A proxy was not found, or an error occurred.
+		Returns the Proxy configuration for HTTPS traffic and the given targetUrl.
+		If none is found, or an error occurs, nil is returned.
+		Params:
+			targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
+		Returns:
+			Proxy: A proxy was found.
+			nil: A proxy was not found, or an error occurred.
 	*/
 	GetHTTPS(targetUrl string) Proxy
 	/*
-	Returns the Proxy configuration for FTP traffic and the given targetUrl.
-	If none is found, or an error occurs, nil is returned.
-	Params:
-		targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
-	Returns:
-		Proxy: A proxy was found.
-		nil: A proxy was not found, or an error occurred.
+		Returns the Proxy configuration for FTP traffic and the given targetUrl.
+		If none is found, or an error occurs, nil is returned.
+		Params:
+			targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+		Returns:
+			Proxy: A proxy was found.
+			nil: A proxy was not found, or an error occurred.
 	*/
 	GetFTP(targetUrl string) Proxy
 	/*
-	Returns the Proxy configuration for generic TCP/UDP traffic and the given targetUrl.
-	If none is found, or an error occurs, nil is returned.
-	Params:
-		targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
-	Returns:
-		Proxy: A proxy was found.
-		nil: A proxy was not found, or an error occurred.
+		Returns the Proxy configuration for generic TCP/UDP traffic and the given targetUrl.
+		If none is found, or an error occurs, nil is returned.
+		Params:
+			targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+		Returns:
+			Proxy: A proxy was found.
+			nil: A proxy was not found, or an error occurred.
 	*/
 	GetSOCKS(targetUrl string) Proxy
 }
