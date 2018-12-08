@@ -53,7 +53,12 @@ Returns:
 	nil: A proxy was not found, or an error occurred
 */
 func (p *providerDarwin) Get(protocol string, targetUrlStr string) Proxy {
-	return p.provider.get(protocol, ParseTargetURL(targetUrlStr, protocol))
+	targetUrl := ParseTargetURL(targetUrlStr, protocol)
+	proxy := p.provider.get(protocol, targetUrl)
+	if proxy != nil {
+		return proxy
+	}
+	return p.readDarwinNetworkSettingProxy(protocol, targetUrl)
 }
 
 /*
