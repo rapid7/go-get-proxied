@@ -82,23 +82,42 @@ type Provider interface {
 			nil: A proxy was not found, or an error occurred.
 	*/
 	GetSOCKSProxy(targetUrl string) Proxy
+	/*
+		Set the timeouts used by this provider making a call which requires external resources (i.e. WPAD/PAC).
+		Should any of these timeouts be exceeded, that particular call will be cancelled.
+		To this end, this timeout does not represent the complete timeout for any call to this provider,
+		but rather are applied to individual implementations uniquely.
+		Additionally, this timeout is not guaranteed to be respected by the implementation, and may vary.
+		Params:
+			resolve: Time in milliseconds to use for name resolution. Provider default is 5000.
+			connect: Time in milliseconds to use for server connection requests. Provider default is 5000.
+					 TCP/IP can time out while setting up the socket during the
+					 three leg SYN/ACK exchange, regardless of the value of this parameter.
+			send: Time in milliseconds to use for sending requests. Provider default is 20000.
+			receive: Time in milliseconds to receive a response to a request. Provider default is 20000.
+	*/
+	SetTimeouts(resolve int, connect int, send int, receive int)
 }
 
 const (
-	protocolHTTP         = "http"
-	protocolHTTPS        = "https"
-	protocolFTP          = "ftp"
-	protocolSOCKS        = "socks"
-	proxyKeyFormat       = "%s_PROXY"
-	noProxyKeyUpper      = "NO_PROXY"
-	noProxyKeyLower      = "no_proxy"
-	prefixSOCKS          = protocolSOCKS
-	prefixAll            = "all"
-	targetUrlWildcard    = "*"
-	domainDelimiter      = "."
-	bypassLocal          = "<local>"
-	srcConfigurationFile = "ConfigurationFile"
-	srcEnvironmentFmt    = "Environment[%s]"
+	protocolHTTP          = "http"
+	protocolHTTPS         = "https"
+	protocolFTP           = "ftp"
+	protocolSOCKS         = "socks"
+	proxyKeyFormat        = "%s_PROXY"
+	noProxyKeyUpper       = "NO_PROXY"
+	noProxyKeyLower       = "no_proxy"
+	prefixSOCKS           = protocolSOCKS
+	prefixAll             = "all"
+	targetUrlWildcard     = "*"
+	domainDelimiter       = "."
+	bypassLocal           = "<local>"
+	srcConfigurationFile  = "ConfigurationFile"
+	srcEnvironmentFmt     = "Environment[%s]"
+	defaultResolveTimeout = 5000
+	defaultConnectTimeout = 5000
+	defaultSendTimeout    = 20000
+	defaultReceiveTimeout = 20000
 )
 
 type getEnvAdapter func(string) string
@@ -106,15 +125,44 @@ type getEnvAdapter func(string) string
 type commandAdapter func(context.Context, string, ...string) *exec.Cmd
 
 type provider struct {
-	configFile string
-	getEnv     getEnvAdapter
-	proc       commandAdapter
+	configFile     string
+	getEnv         getEnvAdapter
+	proc           commandAdapter
+	resolveTimeout int
+	connectTimeout int
+	sendTimeout    int
+	receiveTimeout int
 }
 
 func (p *provider) init(configFile string) {
 	p.configFile = configFile
 	p.getEnv = os.Getenv
 	p.proc = exec.CommandContext
+	p.resolveTimeout = defaultResolveTimeout
+	p.connectTimeout = defaultConnectTimeout
+	p.sendTimeout = defaultSendTimeout
+	p.receiveTimeout = defaultReceiveTimeout
+}
+
+/*
+Set the timeouts used by this provider making a call which requires external resources (i.e. WPAD/PAC).
+Should any of these timeouts be exceeded, that particular call will be cancelled.
+To this end, this timeout does not represent the complete timeout for any call to this provider,
+but rather are applied to individual implementations uniquely.
+Additionally, this timeout is not guaranteed to be respected by the implementation, and may vary.
+Params:
+	resolve: Time in milliseconds to use for name resolution. Provider default is 5000.
+	connect: Time in milliseconds to use for server connection requests. Provider default is 5000.
+			 TCP/IP can time out while setting up the socket during the
+			 three leg SYN/ACK exchange, regardless of the value of this parameter.
+	send: Time in milliseconds to use for sending requests. Provider default is 20000.
+	receive: Time in milliseconds to receive a response to a request. Provider default is 20000.
+*/
+func (p *provider) SetTimeouts(resolve int, connect int, send int, receive int) {
+	p.resolveTimeout = resolve
+	p.connectTimeout = connect
+	p.sendTimeout = send
+	p.receiveTimeout = receive
 }
 
 /*
