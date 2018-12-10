@@ -20,10 +20,6 @@ import (
 	"strings"
 )
 
-const (
-	userAgent = "ir_agent"
-)
-
 /*
 Create a new Provider which is used to retrieve Proxy configurations.
 Params:
@@ -46,41 +42,80 @@ This function searches the following locations in the following order:
 	* IE Proxy Config: Manual
 	* WinHTTP Default
 Params:
-	protocol: The proxy's protocol (i.e. https)
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerWindows) Get(protocol string, targetUrlStr string) Proxy {
+func (p *providerWindows) GetProxy(protocol string, targetUrlStr string) Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
 	proxy := p.provider.get(protocol, targetUrl)
 	if proxy != nil {
 		return proxy
 	}
-	// Prevent information leak over clear text WPAD/PAC - Only use the protocol, host, and port
 	return p.readWinHttpProxy(protocol, targetUrl)
 }
 
 /*
-Returns the HTTPS Proxy configuration for the given targetUrl.
+Returns the Proxy configuration for HTTP traffic and the given targetUrl.
 If none is found, or an error occurs, nil is returned.
-This function searches the following locations in the following order:
-	* Configuration file: proxy.config
-	* Environment: HTTPS_PROXY, https_proxy, ...
-	* IE Proxy Config: AutoDetect
-	* IE Proxy Config: AutoConfig URL
-	* IE Proxy Config: Manual
-	* WinHTTP Default
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. http://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerWindows) GetHTTPProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolHTTP, targetUrl)
+}
+
+/*
+Returns the Proxy configuration for HTTPS traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
 Params:
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
-	Proxy: A proxy was found
-	nil: A proxy was not found, or an error occurred
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerWindows) GetHTTPS(targetUrlStr string) Proxy {
-	return p.Get("https", targetUrlStr)
+func (p *providerWindows) GetHTTPSProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolHTTPS, targetUrl)
 }
+
+/*
+Returns the Proxy configuration for FTP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerWindows) GetFTPProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolFTP, targetUrl)
+}
+
+/*
+Returns the Proxy configuration for generic TCP/UDP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerWindows) GetSOCKSProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolSOCKS, targetUrl)
+}
+
+const (
+	userAgent        = "ir_agent"
+	srcAutoDetect    = "WinHTTP:AutoDetect"
+	srcAutoConfigUrl = "WinHTTP:AutoConfigUrl"
+	srcNamedProxy    = "WinHTTP:NamedProxy"
+	srcWinHttp       = "WinHTTP:WinHttpDefault"
+)
 
 type providerWindows struct {
 	provider
@@ -110,7 +145,7 @@ func (p *providerWindows) readWinHttpProxy(protocol string, targetUrl *url.URL) 
 				log.Printf("[proxy.Provider.readWinHttpProxy] No proxy discovered via AutoConfigUrl, %s: %s\n", autoConfigUrl, err)
 			}
 		}
-		proxy, err := p.parseProxyInfo("WinHTTP:NamedProxy", protocol, targetUrl, ieProxyConfig.LpszProxy, ieProxyConfig.LpszProxyBypass)
+		proxy, err := p.parseProxyInfo(srcNamedProxy, protocol, targetUrl, ieProxyConfig.LpszProxy, ieProxyConfig.LpszProxyBypass)
 		if err == nil {
 			return proxy
 		} else if !isNotFound(err) {
@@ -145,7 +180,7 @@ func (p *providerWindows) getIeProxyConfigCurrentUser() (*winhttp.CurrentUserIEP
 /*
 Returns the Proxy found through automatic detection, if any.
 Params:
-	protocol: The proxy's intended protocol
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
 	Proxy, nil: A proxy was found
@@ -153,7 +188,7 @@ Returns:
 	nil, error: An error occurred
 */
 func (p *providerWindows) getProxyAutoDetect(protocol string, targetUrl *url.URL) (Proxy, error) {
-	return p.getProxyForUrl("WinHTTP:AutoDetect", protocol, targetUrl,
+	return p.getProxyForUrl(srcAutoDetect, protocol, targetUrl,
 		&winhttp.AutoProxyOptions{
 			DwFlags:                winhttp.WINHTTP_AUTOPROXY_AUTO_DETECT,
 			DwAutoDetectFlags:      winhttp.WINHTTP_AUTO_DETECT_TYPE_DHCP | winhttp.WINHTTP_AUTO_DETECT_TYPE_DNS_A,
@@ -164,7 +199,7 @@ func (p *providerWindows) getProxyAutoDetect(protocol string, targetUrl *url.URL
 /*
 Returns the Proxy found with the PAC file retrieved from autoConfigUrl, if any.
 Params:
-	protocol: The proxy's intended protocol
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 	autoConfigUrl: The URL to be used to retrieve the PAC file.
 Returns:
@@ -173,7 +208,7 @@ Returns:
 	nil, error: An error occurred
 */
 func (p *providerWindows) getProxyAutoConfigUrl(protocol string, targetUrl *url.URL, autoConfigUrl string) (Proxy, error) {
-	return p.getProxyForUrl("WinHTTP:AutoConfigUrl", protocol, targetUrl,
+	return p.getProxyForUrl(srcAutoConfigUrl, protocol, targetUrl,
 		&winhttp.AutoProxyOptions{
 			DwFlags:                winhttp.WINHTTP_AUTOPROXY_CONFIG_URL,
 			LpszAutoConfigUrl:      winhttp.StringToLpwstr(autoConfigUrl),
@@ -185,7 +220,7 @@ func (p *providerWindows) getProxyAutoConfigUrl(protocol string, targetUrl *url.
 Returns the Proxy found through the WinHTTP default settings.
 This is typically configured via: `netsh winhttp set proxy`
 Params:
-	protocol: The proxy's intended protocol
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
 	Proxy, nil: A proxy was found
@@ -198,14 +233,14 @@ func (p *providerWindows) getProxyWinHttpDefault(protocol string, targetUrl *url
 		return nil, err
 	}
 	defer p.freeWinHttpResource(pInfo)
-	return p.parseProxyInfo("WinHTTP:WinHttpDefault", protocol, targetUrl, pInfo.LpszProxy, pInfo.LpszProxyBypass)
+	return p.parseProxyInfo(srcWinHttp, protocol, targetUrl, pInfo.LpszProxy, pInfo.LpszProxyBypass)
 }
 
 /*
 Returns the Proxy found through either automatic detection or a automatic configuration URL.
 Params:
 	src: If a proxy is constructed, the human readable source to associated it with.
-	protocol: The proxy's intended protocol
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 	autoProxyOptions: Use this to inform WinHTTP what route to take when doing the lookup (automatic detection, or automatic configuration URL)
 Returns:
@@ -241,7 +276,7 @@ func (p *providerWindows) getProxyInfoForUrl(targetUrl *url.URL, autoProxyOption
 	if err != nil {
 		return nil, err
 	}
-	defer winhttp.CloseHandle(h)
+	defer p.closeHandle(h)
 	err = winhttp.SetTimeouts(h, 60000, 60000, 30000, 30000)
 	if err != nil {
 		return nil, err
@@ -257,7 +292,7 @@ func (p *providerWindows) getProxyInfoForUrl(targetUrl *url.URL, autoProxyOption
 Parse the lpszProxy and lpszProxyBypass into a Proxy configuration (if any).
 Params:
 	src: If a proxy is constructed, the human readable source to associated it with.
-	protocol: The proxy's intended protocol
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 	lpszProxy: The Lpwstr which represents the proxy value (if any). This value can be optionally separated by protocol.
 	lpszProxyBypass: The Lpwstr which represents the proxy bypass value (if any).
@@ -272,7 +307,7 @@ func (p *providerWindows) parseProxyInfo(src string, protocol string, targetUrl 
 	if proxyUrlStr == "" {
 		return nil, new(notFoundError)
 	}
-	proxyUrl, err := ParseURL(proxyUrlStr, protocol)
+	proxyUrl, err := ParseURL(proxyUrlStr, "")
 	if err != nil {
 		return nil, err
 	}
@@ -284,7 +319,7 @@ func (p *providerWindows) parseProxyInfo(src string, protocol string, targetUrl 
 			return nil, new(notFoundError)
 		}
 	}
-	return NewProxy(protocol, proxyUrl, src)
+	return NewProxy(proxyUrl, src)
 }
 
 /*
@@ -295,7 +330,7 @@ For example:
 	("https", "") -> ""
 	("https", "http=4.5.6.7") -> ""
 Params:
-	protocol: The proxy's intended protocol
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	lpszProxy: The Lpwstr which represents the proxy value (if any). This value can be optionally separated by protocol.
 Returns:
 	string: The proxy URL (if any) from the lpszProxy value.
@@ -333,6 +368,17 @@ Returns:
 //noinspection SpellCheckingInspection
 func (p *providerWindows) isLpszProxyBypass(targetUrl *url.URL, lpszProxyBypass string) bool {
 	return p.isProxyBypass(targetUrl, lpszProxyBypass, ";")
+}
+
+/*
+Close the given handle. This should always be called when use of a handle is no longer required.
+Params:
+	h: The handle
+*/
+func (p *providerWindows) closeHandle(h winhttp.HInternet) {
+	if err := winhttp.CloseHandle(h); err != nil {
+		log.Printf("[proxy.Provider.closeHandle] Failed to close handle \"%d\": %s\n", h, err)
+	}
 }
 
 /*

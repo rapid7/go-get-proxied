@@ -32,6 +32,8 @@ var dataParseURL = []struct {
 	{"https://1.2.3.4:8080?test123= v1&test456#fragment1", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", RawQuery: "test123= v1&test456", Fragment: "fragment1"}, nil},
 	{"https://1.2.3.4:8080#fragment1", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", Fragment: "fragment1"}, nil},
 	{"https://username:password@1.2.3.4:8080", "", &url.URL{Scheme: "https", Host: "1.2.3.4:8080", User: url.UserPassword("username", "password")}, nil},
+	{"//test123:8080", "", &url.URL{Scheme: "", Host: "test123:8080"}, nil},
+	{"//test123", "", &url.URL{Scheme: "", Host: "test123"}, nil},
 	// No scheme
 	{"1.2.3.4:8080", "", &url.URL{Host: "1.2.3.4:8080"}, nil},
 	// No scheme with default

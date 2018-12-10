@@ -47,27 +47,27 @@ Current WinHTTP proxy settings:
     Proxy Server(s) :  testProxy:8999
     Bypass List     :  (none)
 > ./go-get-proxied
-https://testProxy:8999
+//testProxy:8999
 > ./go-get-proxied -j
 {
    "host": "testProxy",
    "password": null,
    "port": 8999,
-   "protocol": "https",
+   "protocol": "",
    "src": "WinHTTP:WinHttpDefault",
    "username": null
 }
 ```
 ```bash
-> echo '{"https":"testProxy:8999"}' > proxy.config
+> echo '{"https":"http://testProxy:8999"}' > proxy.config
 > ./go-get-proxied -c proxy.config
-https://testProxy:8999
+http://testProxy:8999
 > ./go-get-proxied -c proxy.config -j
 {
    "host": "testProxy",
    "password": null,
    "port": 8999,
-   "protocol": "https",
+   "protocol": "http",
    "src": "ConfigurationFile",
    "username": null
 }
@@ -78,15 +78,15 @@ https://testProxy:8999
 The priority of retrieval is the following.
 -  **Windows**:
    - Configuration File
-   - Environment Variable: `HTTPS_PROXY` and `NO_PROXY`
+   - Environment Variable: `HTTPS_PROXY`, `HTTP_PROXY`, `FTP_PROXY`, or `ALL_PROXY`. `NO_PROXY` is respected.
    - Internet Options: Automatically detect settings (`WPAD`)
    - Internet Options: Use automatic configuration script (`PAC`)
    - Internet Options: Manual proxy server
    - WINHTTP: (`netsh winhttp`)
 - **Linux**:
    - Configuration File
-   - Environment Variable: `HTTPS_PROXY` and `NO_PROXY`
+   - Environment Variable: `HTTPS_PROXY`, `HTTP_PROXY`, `FTP_PROXY`, or `ALL_PROXY`. `NO_PROXY` is respected.
 - **MacOS**:
    - Configuration File
-   - Environment Variable: `HTTPS_PROXY` and `NO_PROXY`
+   - Environment Variable: `HTTPS_PROXY`, `HTTP_PROXY`, `FTP_PROXY`, or `ALL_PROXY`. `NO_PROXY` is respected.
    - Network Settings: `scutil`

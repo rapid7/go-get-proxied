@@ -4,7 +4,7 @@
 //
 // 	Windows:
 //		Configuration File
-//		Environment Variable: HTTPS_PROXY and NO_PROXY
+//		Environment Variable: HTTPS_PROXY, HTTP_PROXY, FTP_PROXY, or ALL_PROXY. `NO_PROXY` is respected.
 //		Internet Options: Automatically detect settings (WPAD)
 //		Internet Options: Use automatic configuration script (PAC)
 //		Internet Options: Manual proxy server
@@ -12,11 +12,11 @@
 //
 //	Linux:
 //		Configuration File
-//		Environment Variable: HTTPS_PROXY and NO_PROXY
+//		Environment Variable: HTTPS_PROXY, HTTP_PROXY, FTP_PROXY, or ALL_PROXY. `NO_PROXY` is respected.
 //
 //	MacOS:
 //		Configuration File
-//		Environment Variable: HTTPS_PROXY and NO_PROXY
+//		Environment Variable: HTTPS_PROXY, HTTP_PROXY, FTP_PROXY, or ALL_PROXY. `NO_PROXY` is respected.
 //		Network Settings: scutil
 //
 // Example Usage

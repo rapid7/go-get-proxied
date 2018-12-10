@@ -156,7 +156,7 @@ func TestParseScutildata_Read_HTTPS_HTTP(t *testing.T) {
 			// test https and https proxies are not nil
 			a.NotNil(expectedProxy)
 			// test expected https proxy matches hardcoded proxy, test lowercase
-			a.Equal(&proxy{src: "State:/Network/Global/Proxies", protocol: strings.ToLower(protocol), host: "1.2.3.4", port: 1234},
+			a.Equal(&proxy{src: "State:/Network/Global/Proxies", host: "1.2.3.4", port: 1234},
 				expectedProxy)
 		}
 	}
@@ -190,7 +190,7 @@ func TestParseScutildata_Read_HTTPS(t *testing.T) {
 				// test https proxy is not nil
 				a.NotNil(expectedProxy)
 				// test expected https proxy matches hardcoded proxy
-				a.Equal(&proxy{src: "State:/Network/Global/Proxies", protocol: strings.ToLower(protocol), host: "1.2.3.4", port: 1234},
+				a.Equal(&proxy{src: "State:/Network/Global/Proxies", host: "1.2.3.4", port: 1234},
 					expectedProxy)
 			} else {
 				// test http proxy is nil
@@ -229,7 +229,7 @@ func TestParseScutildata_Read_HTTP(t *testing.T) {
 				// test http proxy is not nil
 				a.NotNil(expectedProxy)
 				// test expected http proxy matches hardcoded proxy
-				a.Equal(&proxy{src: "State:/Network/Global/Proxies", protocol: strings.ToLower(protocol), host: "1.2.3.4", port: 1234},
+				a.Equal(&proxy{src: "State:/Network/Global/Proxies", host: "1.2.3.4", port: 1234},
 					expectedProxy)
 			} else {
 				// test https proxy is nil
@@ -278,7 +278,7 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 	// test error is nil
 	a.Nil(err)
 	// test expected proxy matches hardcoded proxy
-	a.Equal(&proxy{src: "State:/Network/Global/Proxies", protocol: strings.ToLower(protocol), host: "1.2.3.4", port: 1234},
+	a.Equal(&proxy{src: "State:/Network/Global/Proxies", host: "1.2.3.4", port: 1234},
 		expectedProxy)
 	// test proxy is not nil
 	a.NotNil(c.parseScutildata(protocol, targetUrl, "echo", command))
@@ -296,7 +296,7 @@ func TestParseScutildata_Read_HTTPS_BYPASS_TARGET_URL(t *testing.T) {
 					a.Nil(expectedProxy)
 				} else {
 					// test expected https proxy matches hardcoded proxy
-					a.Equal(&proxy{src: "State:/Network/Global/Proxies", protocol: strings.ToLower(protocol), host: "1.2.3.4", port: 1234},
+					a.Equal(&proxy{src: "State:/Network/Global/Proxies", host: "1.2.3.4", port: 1234},
 						expectedProxy)
 				}
 			}

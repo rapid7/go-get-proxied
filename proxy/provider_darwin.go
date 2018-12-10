@@ -45,15 +45,14 @@ If none is found, or an error occurs, nil is returned.
 This function searches the following locations in the following order:
 	* Configuration file: proxy.config
 	* Environment: HTTPS_PROXY, https_proxy, ...
-	* scutil: The Network settings
 Params:
-	protocol: The proxy's protocol (i.e. https)
+	protocol: The protocol of traffic the proxy is to be used for. (i.e. http, https, ftp, socks)
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerDarwin) Get(protocol string, targetUrlStr string) Proxy {
+func (p *providerDarwin) GetProxy(protocol string, targetUrlStr string) Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
 	if proxy := p.provider.get(protocol, targetUrl); proxy != nil {
 		return proxy
@@ -62,21 +61,68 @@ func (p *providerDarwin) Get(protocol string, targetUrlStr string) Proxy {
 }
 
 /*
-Returns the HTTPS Proxy configuration for the given targetUrl.
+Returns the Proxy configuration for HTTP traffic and the given targetUrl.
 If none is found, or an error occurs, nil is returned.
-This function searches the following locations in the following order:
-	* Configuration file: proxy.config
-	* Environment: HTTPS_PROXY, https_proxy, ...
-	* scutil: The Network settings
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. http://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerDarwin) GetHTTPProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolHTTP, targetUrl)
+}
+
+/*
+Returns the Proxy configuration for HTTPS traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
 Params:
 	targetUrl: The URL the proxy is to be used for. (i.e. https://test.endpoint.rapid7.com)
 Returns:
-	Proxy: A proxy was found
-	nil: A proxy was not found, or an error occurred
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerDarwin) GetHTTPS(targetUrl string) Proxy {
-	return p.Get("https", targetUrl)
+func (p *providerDarwin) GetHTTPSProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolHTTPS, targetUrl)
 }
+
+/*
+Returns the Proxy configuration for FTP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerDarwin) GetFTPProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolFTP, targetUrl)
+}
+
+/*
+Returns the Proxy configuration for generic TCP/UDP traffic and the given targetUrl.
+If none is found, or an error occurs, nil is returned.
+Params:
+	targetUrl: The URL the proxy is to be used for. (i.e. ftp://test.endpoint.rapid7.com)
+Returns:
+	Proxy: A proxy was found.
+	nil: A proxy was not found, or an error occurred.
+*/
+func (p *providerDarwin) GetSOCKSProxy(targetUrl string) Proxy {
+	return p.GetProxy(protocolSOCKS, targetUrl)
+}
+
+const (
+	scUtilBinary          = "scutil"
+	scUtilBinaryArgument  = "--proxy"
+	scUtilProxyEnabled    = "Enable:1"
+	scUtilProxyDisabled   = "Enable:0"
+	scUtilPortPrefix      = "Port:"
+	scUtilProxyPrefix     = "Proxy:"
+	scUtilExceptionsList  = "ExceptionsList"
+	exceptionsListPattern = "ExceptionsList.*:.*{(.|\n)*.}"
+	srcScUtil             = "State:/Network/Global/Proxies"
+)
 
 /*
 Returns the Network Setting Proxy found.
@@ -89,7 +135,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred
 */
 func (p *providerDarwin) readDarwinNetworkSettingProxy(protocol string, targetUrl *url.URL) Proxy {
-	proxy, err := p.parseScutildata(protocol, targetUrl, "scutil", "--proxy")
+	proxy, err := p.parseScutildata(protocol, targetUrl, scUtilBinary, scUtilBinaryArgument)
 	if err != nil {
 		if isNotFound(err) {
 			log.Printf("[proxy.Provider.readDarwinNetworkSettingProxy]: %s proxy is not enabled.\n", protocol)
@@ -134,23 +180,23 @@ func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, na
 	var port string
 	var host string
 	var bypassProxyEnable bool
-	regexEnable, err := regexp.Compile(lookupProtocol + "Enable:1")
+	regexEnable, err := regexp.Compile(lookupProtocol + scUtilProxyEnabled)
 	if err != nil {
 		return nil, err
 	}
-	regexDisable, err := regexp.Compile(lookupProtocol + "Enable:0")
+	regexDisable, err := regexp.Compile(lookupProtocol + scUtilProxyDisabled)
 	if err != nil {
 		return nil, err
 	}
-	regexPort, err := regexp.Compile(lookupProtocol + "Port:")
+	regexPort, err := regexp.Compile(lookupProtocol + scUtilPortPrefix)
 	if err != nil {
 		return nil, err
 	}
-	regexProxy, err := regexp.Compile(lookupProtocol + "Proxy:")
+	regexProxy, err := regexp.Compile(lookupProtocol + scUtilProxyPrefix)
 	if err != nil {
 		return nil, err
 	}
-	regexBypassProxy, err := regexp.Compile("ExceptionsList")
+	regexBypassProxy, err := regexp.Compile(scUtilExceptionsList)
 	if err != nil {
 		return nil, err
 	}
@@ -192,12 +238,12 @@ func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, na
 	}
 
 	proxyUrlStr := host + ":" + port
-	proxyUrl, err := ParseURL(proxyUrlStr, protocol)
+	proxyUrl, err := ParseURL(proxyUrlStr, "")
 	if err != nil {
 		return nil, err
 	}
-	src := "State:/Network/Global/Proxies"
-	proxy, err := NewProxy(protocol, proxyUrl, src)
+	src := srcScUtil
+	proxy, err := NewProxy(proxyUrl, src)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +275,7 @@ Returns:
 	error: the error that has occurred, nil if there is no error
 */
 func (p *providerDarwin) readScutilBypassProxy(scutilData string) (string, error) {
-	regexBypassProxy, err := regexp.Compile("ExceptionsList.*:.*{(.|\n)*.}")
+	regexBypassProxy, err := regexp.Compile(exceptionsListPattern)
 	if err != nil {
 		return "", err
 	}
