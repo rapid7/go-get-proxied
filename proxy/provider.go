@@ -219,7 +219,7 @@ Returns:
 */
 func (p *provider) readSystemEnvProxy(prefix string, targetUrl *url.URL) Proxy {
 	// SOCKS configuration is set as ALL_PROXY and all_proxy on Linux. Replace here for all OSs to keep consistent
-	if prefix == prefixSOCKS {
+	if strings.HasPrefix(prefix, prefixSOCKS) {
 		prefix = prefixAll
 	}
 	keys := []string{

@@ -201,6 +201,15 @@ var dataProviderReadSystemEnvProxiesAll = []struct {
 		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
 		nil,
 	},
+	// Special case for SOCKS5, it is replaced with ALL
+	{
+		map[string]string{
+			"SOCKS_PROXY": "socks://testUpper",
+		},
+		"socks5",
+		&url.URL{Scheme: "https", Host: "test.endpoint.rapid7.com"},
+		nil,
+	},
 	// Special case for SOCKS, it is replaced with ALL
 	{
 		map[string]string{
