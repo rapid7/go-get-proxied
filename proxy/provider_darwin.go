@@ -54,8 +54,7 @@ Returns:
 */
 func (p *providerDarwin) GetProxy(protocol string, targetUrlStr string) Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
-	proxy := p.provider.get(protocol, targetUrl)
-	if proxy != nil {
+	if proxy := p.provider.get(protocol, targetUrl); proxy != nil {
 		return proxy
 	}
 	return p.readDarwinNetworkSettingProxy(protocol, targetUrl)
