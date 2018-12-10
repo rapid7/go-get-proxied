@@ -146,16 +146,17 @@ func (p *provider) init(configFile string) {
 
 /*
 Set the timeouts used by this provider making a call which requires external resources (i.e. WPAD/PAC).
-Should any of these timeouts be exceeded, that particular call will be cancelled. To this end,
-this timeout does not represent the complete timeout for any call to this provider, but rather are applied
-to individual implementations uniquely.
+Should any of these timeouts be exceeded, that particular call will be cancelled.
+To this end, this timeout does not represent the complete timeout for any call to this provider,
+but rather are applied to individual implementations uniquely.
+Additionally, this timeout is not guaranteed to be respected by the implementation, and may vary.
 Params:
-	resolve: Time in milliseconds to use for name resolution.
-	connect: Time in milliseconds to use for server connection requests.
+	resolve: Time in milliseconds to use for name resolution. Provider default is 5000.
+	connect: Time in milliseconds to use for server connection requests. Provider default is 5000.
 			 TCP/IP can time out while setting up the socket during the
 			 three leg SYN/ACK exchange, regardless of the value of this parameter.
-	send: Time in milliseconds to use for sending requests.
-	receive: Time in milliseconds to receive a response to a request.
+	send: Time in milliseconds to use for sending requests. Provider default is 20000.
+	receive: Time in milliseconds to receive a response to a request. Provider default is 20000.
 */
 func (p *provider) SetTimeouts(resolve int, connect int, send int, receive int) {
 	p.resolveTimeout = resolve
