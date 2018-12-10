@@ -54,7 +54,6 @@ func (p *providerWindows) GetProxy(protocol string, targetUrlStr string) Proxy {
 	if proxy != nil {
 		return proxy
 	}
-	// Prevent information leak over clear text WPAD/PAC - Only use the protocol, host, and port
 	return p.readWinHttpProxy(protocol, targetUrl)
 }
 
