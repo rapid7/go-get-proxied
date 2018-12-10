@@ -52,7 +52,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerWindows) Get(protocol string, targetUrlStr string) Proxy {
+func (p *providerWindows) GetProxy(protocol string, targetUrlStr string) Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
 	proxy := p.provider.get(protocol, targetUrl)
 	if proxy != nil {
@@ -71,8 +71,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerWindows) GetHTTP(targetUrl string) Proxy {
-	return p.Get("http", targetUrl)
+func (p *providerWindows) GetHTTPProxy(targetUrl string) Proxy {
+	return p.GetProxy("http", targetUrl)
 }
 
 /*
@@ -84,8 +84,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerWindows) GetHTTPS(targetUrl string) Proxy {
-	return p.Get("https", targetUrl)
+func (p *providerWindows) GetHTTPSProxy(targetUrl string) Proxy {
+	return p.GetProxy("https", targetUrl)
 }
 
 /*
@@ -97,8 +97,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerWindows) GetFTP(targetUrl string) Proxy {
-	return p.Get("ftp", targetUrl)
+func (p *providerWindows) GetFTPProxy(targetUrl string) Proxy {
+	return p.GetProxy("ftp", targetUrl)
 }
 
 /*
@@ -110,8 +110,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerWindows) GetSOCKS(targetUrl string) Proxy {
-	return p.Get("socks", targetUrl)
+func (p *providerWindows) GetSOCKSProxy(targetUrl string) Proxy {
+	return p.GetProxy("socks", targetUrl)
 }
 
 type providerWindows struct {

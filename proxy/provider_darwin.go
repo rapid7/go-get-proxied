@@ -52,7 +52,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerDarwin) Get(protocol string, targetUrlStr string) Proxy {
+func (p *providerDarwin) GetProxy(protocol string, targetUrlStr string) Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
 	proxy := p.provider.get(protocol, targetUrl)
 	if proxy != nil {
@@ -70,8 +70,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerDarwin) GetHTTP(targetUrl string) Proxy {
-	return p.Get("http", targetUrl)
+func (p *providerDarwin) GetHTTPProxy(targetUrl string) Proxy {
+	return p.GetProxy("http", targetUrl)
 }
 
 /*
@@ -83,8 +83,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerDarwin) GetHTTPS(targetUrl string) Proxy {
-	return p.Get("https", targetUrl)
+func (p *providerDarwin) GetHTTPSProxy(targetUrl string) Proxy {
+	return p.GetProxy("https", targetUrl)
 }
 
 /*
@@ -96,8 +96,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerDarwin) GetFTP(targetUrl string) Proxy {
-	return p.Get("ftp", targetUrl)
+func (p *providerDarwin) GetFTPProxy(targetUrl string) Proxy {
+	return p.GetProxy("ftp", targetUrl)
 }
 
 /*
@@ -109,8 +109,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerDarwin) GetSOCKS(targetUrl string) Proxy {
-	return p.Get("socks", targetUrl)
+func (p *providerDarwin) GetSOCKSProxy(targetUrl string) Proxy {
+	return p.GetProxy("socks", targetUrl)
 }
 
 /*

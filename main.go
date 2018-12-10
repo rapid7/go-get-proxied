@@ -57,7 +57,7 @@ func main() {
 	} else {
 		log.SetOutput(ioutil.Discard)
 	}
-	p := proxy.NewProvider(config).Get(protocol, target)
+	p := proxy.NewProvider(config).GetProxy(protocol, target)
 	var exit int
 	if p != nil {
 		if jsonOut {

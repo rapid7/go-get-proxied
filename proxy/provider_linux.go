@@ -40,7 +40,7 @@ Returns:
 	Proxy: A proxy was found
 	nil: A proxy was not found, or an error occurred
 */
-func (p *providerLinux) Get(protocol string, targetUrlStr string) Proxy {
+func (p *providerLinux) GetProxy(protocol string, targetUrlStr string) Proxy {
 	return p.provider.get(protocol, ParseTargetURL(targetUrlStr, protocol))
 }
 
@@ -53,8 +53,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerLinux) GetHTTP(targetUrl string) Proxy {
-	return p.Get("http", targetUrl)
+func (p *providerLinux) GetHTTPProxy(targetUrl string) Proxy {
+	return p.GetProxy("http", targetUrl)
 }
 
 /*
@@ -66,8 +66,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerLinux) GetHTTPS(targetUrl string) Proxy {
-	return p.Get("https", targetUrl)
+func (p *providerLinux) GetHTTPSProxy(targetUrl string) Proxy {
+	return p.GetProxy("https", targetUrl)
 }
 
 /*
@@ -79,8 +79,8 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerLinux) GetFTP(targetUrl string) Proxy {
-	return p.Get("ftp", targetUrl)
+func (p *providerLinux) GetFTPProxy(targetUrl string) Proxy {
+	return p.GetProxy("ftp", targetUrl)
 }
 
 /*
@@ -92,6 +92,6 @@ Returns:
 	Proxy: A proxy was found.
 	nil: A proxy was not found, or an error occurred.
 */
-func (p *providerLinux) GetSOCKS(targetUrl string) Proxy {
-	return p.Get("socks", targetUrl)
+func (p *providerLinux) GetSOCKSProxy(targetUrl string) Proxy {
+	return p.GetProxy("socks", targetUrl)
 }
