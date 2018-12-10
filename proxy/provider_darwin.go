@@ -121,6 +121,7 @@ const (
 	scUtilProxyPrefix     = "Proxy:"
 	scUtilExceptionsList  = "ExceptionsList"
 	exceptionsListPattern = "ExceptionsList.*:.*{(.|\n)*.}"
+	srcScUtil             = "State:/Network/Global/Proxies"
 )
 
 /*
@@ -241,7 +242,7 @@ func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, na
 	if err != nil {
 		return nil, err
 	}
-	src := "State:/Network/Global/Proxies"
+	src := srcScUtil
 	proxy, err := NewProxy(proxyUrl, src)
 	if err != nil {
 		return nil, err

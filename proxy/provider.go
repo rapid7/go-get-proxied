@@ -85,18 +85,20 @@ type Provider interface {
 }
 
 const (
-	protocolHTTP      = "http"
-	protocolHTTPS     = "https"
-	protocolFTP       = "ftp"
-	protocolSOCKS     = "socks"
-	proxyKeyFormat    = "%s_PROXY"
-	noProxyKeyUpper   = "NO_PROXY"
-	noProxyKeyLower   = "no_proxy"
-	prefixSOCKS       = protocolSOCKS
-	prefixAll         = "all"
-	targetUrlWildcard = "*"
-	domainDelimiter   = "."
-	bypassLocal       = "<local>"
+	protocolHTTP         = "http"
+	protocolHTTPS        = "https"
+	protocolFTP          = "ftp"
+	protocolSOCKS        = "socks"
+	proxyKeyFormat       = "%s_PROXY"
+	noProxyKeyUpper      = "NO_PROXY"
+	noProxyKeyLower      = "no_proxy"
+	prefixSOCKS          = protocolSOCKS
+	prefixAll            = "all"
+	targetUrlWildcard    = "*"
+	domainDelimiter      = "."
+	bypassLocal          = "<local>"
+	srcConfigurationFile = "ConfigurationFile"
+	srcEnvironmentFmt    = "Environment[%s]"
 )
 
 type getEnvAdapter func(string) string
@@ -155,7 +157,7 @@ func (p *provider) readConfigFileProxy(protocol string) Proxy {
 	uUrl, uErr := ParseURL(uStr, "")
 	var uProxy Proxy
 	if uErr == nil {
-		uProxy, uErr = NewProxy(uUrl, "ConfigurationFile")
+		uProxy, uErr = NewProxy(uUrl, srcConfigurationFile)
 	}
 	if uErr != nil {
 		log.Printf("[proxy.Provider.readConfigFileProxy]: invalid config file proxy, skipping \"%s\": \"%s\"\n", protocol, uStr)
@@ -319,7 +321,7 @@ func (p *provider) parseEnvProxy(key string) (Proxy, error) {
 	if err != nil {
 		return nil, err
 	}
-	proxy, err := NewProxy(proxyUrl, fmt.Sprintf("Environment[%s]", key))
+	proxy, err := NewProxy(proxyUrl, fmt.Sprintf(srcEnvironmentFmt, key))
 	if err != nil {
 		return nil, err
 	}
