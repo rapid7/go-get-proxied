@@ -54,7 +54,11 @@ func NewProxy(u *url.URL, src string) (Proxy, error) {
 	return proxy, nil
 }
 
-var defaultPorts = map[string]uint16{"": 8443, "http": 8443, "https": 8443}
+const (
+	defaultPort = 8443
+)
+
+var defaultPorts = map[string]uint16{"": defaultPort, protocolHTTP: defaultPort, protocolHTTPS: defaultPort}
 
 type proxy struct {
 	protocol string

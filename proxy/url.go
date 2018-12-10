@@ -52,10 +52,10 @@ Returns:
 func ParseTargetURL(targetUrl, defaultScheme string) *url.URL {
 	parsedUrl, err := ParseURL(targetUrl, defaultScheme)
 	if err != nil {
-		return &url.URL{Host: "*"}
+		return &url.URL{Host: targetUrlWildcard}
 	}
 	if parsedUrl.Host == "" {
-		parsedUrl.Host = "*"
+		parsedUrl.Host = targetUrlWildcard
 	}
 	parsedUrl.User = nil
 	parsedUrl.Fragment = ""

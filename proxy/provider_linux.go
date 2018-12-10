@@ -54,7 +54,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerLinux) GetHTTPProxy(targetUrl string) Proxy {
-	return p.GetProxy("http", targetUrl)
+	return p.GetProxy(protocolHTTP, targetUrl)
 }
 
 /*
@@ -67,7 +67,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerLinux) GetHTTPSProxy(targetUrl string) Proxy {
-	return p.GetProxy("https", targetUrl)
+	return p.GetProxy(protocolHTTPS, targetUrl)
 }
 
 /*
@@ -80,7 +80,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerLinux) GetFTPProxy(targetUrl string) Proxy {
-	return p.GetProxy("ftp", targetUrl)
+	return p.GetProxy(protocolFTP, targetUrl)
 }
 
 /*
@@ -93,5 +93,5 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerLinux) GetSOCKSProxy(targetUrl string) Proxy {
-	return p.GetProxy("socks", targetUrl)
+	return p.GetProxy(protocolSOCKS, targetUrl)
 }

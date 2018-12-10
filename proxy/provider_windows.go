@@ -20,10 +20,6 @@ import (
 	"strings"
 )
 
-const (
-	userAgent = "ir_agent"
-)
-
 /*
 Create a new Provider which is used to retrieve Proxy configurations.
 Params:
@@ -72,7 +68,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerWindows) GetHTTPProxy(targetUrl string) Proxy {
-	return p.GetProxy("http", targetUrl)
+	return p.GetProxy(protocolHTTP, targetUrl)
 }
 
 /*
@@ -85,7 +81,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerWindows) GetHTTPSProxy(targetUrl string) Proxy {
-	return p.GetProxy("https", targetUrl)
+	return p.GetProxy(protocolHTTPS, targetUrl)
 }
 
 /*
@@ -98,7 +94,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerWindows) GetFTPProxy(targetUrl string) Proxy {
-	return p.GetProxy("ftp", targetUrl)
+	return p.GetProxy(protocolFTP, targetUrl)
 }
 
 /*
@@ -111,8 +107,16 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerWindows) GetSOCKSProxy(targetUrl string) Proxy {
-	return p.GetProxy("socks", targetUrl)
+	return p.GetProxy(protocolSOCKS, targetUrl)
 }
+
+const (
+	userAgent        = "ir_agent"
+	srcAutoDetect    = "WinHTTP:AutoDetect"
+	srcAutoConfigUrl = "WinHTTP:AutoConfigUrl"
+	srcNamedProxy    = "WinHTTP:NamedProxy"
+	srcWinHttp       = "WinHTTP:WinHttpDefault"
+)
 
 type providerWindows struct {
 	provider
@@ -142,7 +146,7 @@ func (p *providerWindows) readWinHttpProxy(protocol string, targetUrl *url.URL) 
 				log.Printf("[proxy.Provider.readWinHttpProxy] No proxy discovered via AutoConfigUrl, %s: %s\n", autoConfigUrl, err)
 			}
 		}
-		proxy, err := p.parseProxyInfo("WinHTTP:NamedProxy", protocol, targetUrl, ieProxyConfig.LpszProxy, ieProxyConfig.LpszProxyBypass)
+		proxy, err := p.parseProxyInfo(srcNamedProxy, protocol, targetUrl, ieProxyConfig.LpszProxy, ieProxyConfig.LpszProxyBypass)
 		if err == nil {
 			return proxy
 		} else if !isNotFound(err) {
@@ -185,7 +189,7 @@ Returns:
 	nil, error: An error occurred
 */
 func (p *providerWindows) getProxyAutoDetect(protocol string, targetUrl *url.URL) (Proxy, error) {
-	return p.getProxyForUrl("WinHTTP:AutoDetect", protocol, targetUrl,
+	return p.getProxyForUrl(srcAutoDetect, protocol, targetUrl,
 		&winhttp.AutoProxyOptions{
 			DwFlags:                winhttp.WINHTTP_AUTOPROXY_AUTO_DETECT,
 			DwAutoDetectFlags:      winhttp.WINHTTP_AUTO_DETECT_TYPE_DHCP | winhttp.WINHTTP_AUTO_DETECT_TYPE_DNS_A,
@@ -205,7 +209,7 @@ Returns:
 	nil, error: An error occurred
 */
 func (p *providerWindows) getProxyAutoConfigUrl(protocol string, targetUrl *url.URL, autoConfigUrl string) (Proxy, error) {
-	return p.getProxyForUrl("WinHTTP:AutoConfigUrl", protocol, targetUrl,
+	return p.getProxyForUrl(srcAutoConfigUrl, protocol, targetUrl,
 		&winhttp.AutoProxyOptions{
 			DwFlags:                winhttp.WINHTTP_AUTOPROXY_CONFIG_URL,
 			LpszAutoConfigUrl:      winhttp.StringToLpwstr(autoConfigUrl),
@@ -230,7 +234,7 @@ func (p *providerWindows) getProxyWinHttpDefault(protocol string, targetUrl *url
 		return nil, err
 	}
 	defer p.freeWinHttpResource(pInfo)
-	return p.parseProxyInfo("WinHTTP:WinHttpDefault", protocol, targetUrl, pInfo.LpszProxy, pInfo.LpszProxyBypass)
+	return p.parseProxyInfo(srcWinHttp, protocol, targetUrl, pInfo.LpszProxy, pInfo.LpszProxyBypass)
 }
 
 /*

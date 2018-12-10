@@ -70,7 +70,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerDarwin) GetHTTPProxy(targetUrl string) Proxy {
-	return p.GetProxy("http", targetUrl)
+	return p.GetProxy(protocolHTTP, targetUrl)
 }
 
 /*
@@ -83,7 +83,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerDarwin) GetHTTPSProxy(targetUrl string) Proxy {
-	return p.GetProxy("https", targetUrl)
+	return p.GetProxy(protocolHTTPS, targetUrl)
 }
 
 /*
@@ -96,7 +96,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerDarwin) GetFTPProxy(targetUrl string) Proxy {
-	return p.GetProxy("ftp", targetUrl)
+	return p.GetProxy(protocolFTP, targetUrl)
 }
 
 /*
@@ -109,8 +109,19 @@ Returns:
 	nil: A proxy was not found, or an error occurred.
 */
 func (p *providerDarwin) GetSOCKSProxy(targetUrl string) Proxy {
-	return p.GetProxy("socks", targetUrl)
+	return p.GetProxy(protocolSOCKS, targetUrl)
 }
+
+const (
+	scUtilBinary          = "scutil"
+	scUtilBinaryArgument  = "--proxy"
+	scUtilProxyEnabled    = "Enable:1"
+	scUtilProxyDisabled   = "Enable:0"
+	scUtilPortPrefix      = "Port:"
+	scUtilProxyPrefix     = "Proxy:"
+	scUtilExceptionsList  = "ExceptionsList"
+	exceptionsListPattern = "ExceptionsList.*:.*{(.|\n)*.}"
+)
 
 /*
 Returns the Network Setting Proxy found.
@@ -123,7 +134,7 @@ Returns:
 	nil: A proxy was not found, or an error occurred
 */
 func (p *providerDarwin) readDarwinNetworkSettingProxy(protocol string, targetUrl *url.URL) Proxy {
-	proxy, err := p.parseScutildata(protocol, targetUrl, "scutil", "--proxy")
+	proxy, err := p.parseScutildata(protocol, targetUrl, scUtilBinary, scUtilBinaryArgument)
 	if err != nil {
 		if isNotFound(err) {
 			log.Printf("[proxy.Provider.readDarwinNetworkSettingProxy]: %s proxy is not enabled.\n", protocol)
@@ -168,23 +179,23 @@ func (p *providerDarwin) parseScutildata(protocol string, targetUrl *url.URL, na
 	var port string
 	var host string
 	var bypassProxyEnable bool
-	regexEnable, err := regexp.Compile(lookupProtocol + "Enable:1")
+	regexEnable, err := regexp.Compile(lookupProtocol + scUtilProxyEnabled)
 	if err != nil {
 		return nil, err
 	}
-	regexDisable, err := regexp.Compile(lookupProtocol + "Enable:0")
+	regexDisable, err := regexp.Compile(lookupProtocol + scUtilProxyDisabled)
 	if err != nil {
 		return nil, err
 	}
-	regexPort, err := regexp.Compile(lookupProtocol + "Port:")
+	regexPort, err := regexp.Compile(lookupProtocol + scUtilPortPrefix)
 	if err != nil {
 		return nil, err
 	}
-	regexProxy, err := regexp.Compile(lookupProtocol + "Proxy:")
+	regexProxy, err := regexp.Compile(lookupProtocol + scUtilProxyPrefix)
 	if err != nil {
 		return nil, err
 	}
-	regexBypassProxy, err := regexp.Compile("ExceptionsList")
+	regexBypassProxy, err := regexp.Compile(scUtilExceptionsList)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +274,7 @@ Returns:
 	error: the error that has occurred, nil if there is no error
 */
 func (p *providerDarwin) readScutilBypassProxy(scutilData string) (string, error) {
-	regexBypassProxy, err := regexp.Compile("ExceptionsList.*:.*{(.|\n)*.}")
+	regexBypassProxy, err := regexp.Compile(exceptionsListPattern)
 	if err != nil {
 		return "", err
 	}

@@ -26,12 +26,6 @@ import (
 	"strings"
 )
 
-const (
-	proxyKeyFormat  = "%s_PROXY"
-	noProxyKeyUpper = "NO_PROXY"
-	noProxyKeyLower = "no_proxy"
-)
-
 type Provider interface {
 	/*
 		Returns the Proxy configuration for the given traffic protocol and targetUrl.
@@ -89,6 +83,21 @@ type Provider interface {
 	*/
 	GetSOCKSProxy(targetUrl string) Proxy
 }
+
+const (
+	protocolHTTP      = "http"
+	protocolHTTPS     = "https"
+	protocolFTP       = "ftp"
+	protocolSOCKS     = "socks"
+	proxyKeyFormat    = "%s_PROXY"
+	noProxyKeyUpper   = "NO_PROXY"
+	noProxyKeyLower   = "no_proxy"
+	prefixSOCKS       = protocolSOCKS
+	prefixAll         = "all"
+	targetUrlWildcard = "*"
+	domainDelimiter   = "."
+	bypassLocal       = "<local>"
+)
 
 type getEnvAdapter func(string) string
 
@@ -208,8 +217,8 @@ Returns:
 */
 func (p *provider) readSystemEnvProxy(prefix string, targetUrl *url.URL) Proxy {
 	// SOCKS configuration is set as ALL_PROXY and all_proxy on Linux. Replace here for all OSs to keep consistent
-	if prefix == "socks" {
-		prefix = "all"
+	if prefix == prefixSOCKS {
+		prefix = prefixAll
 	}
 	keys := []string{
 		strings.ToUpper(fmt.Sprintf(proxyKeyFormat, prefix)),
@@ -267,7 +276,7 @@ func (p *provider) isProxyBypass(targetUrl *url.URL, proxyBypass string, sep str
 		if s == "" {
 			// No value
 			continue
-		} else if s == "<local>" {
+		} else if s == bypassLocal {
 			// Windows uses <local> for local domains
 			if IsLoopbackHost(targetHost) {
 				return true
@@ -280,12 +289,12 @@ func (p *provider) isProxyBypass(targetUrl *url.URL, proxyBypass string, sep str
 			return true
 		}
 		// Prefix "* for wildcard matches (rapid7.com -> *.rapid7.com)
-		if strings.Index(s, "*") != 0 {
+		if strings.Index(s, targetUrlWildcard) != 0 {
 			// (rapid7.com -> .rapid7.com)
-			if strings.Index(s, ".") != 0 {
-				s = "." + s
+			if strings.Index(s, domainDelimiter) != 0 {
+				s = domainDelimiter + s
 			}
-			s = "*" + s
+			s = targetUrlWildcard + s
 		}
 		if m, err := filepath.Match(s, targetHost); err != nil {
 			return false
