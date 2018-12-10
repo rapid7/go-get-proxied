@@ -277,7 +277,7 @@ func (p *providerWindows) getProxyInfoForUrl(targetUrl *url.URL, autoProxyOption
 		return nil, err
 	}
 	defer p.closeHandle(h)
-	err = winhttp.SetTimeouts(h, 60000, 60000, 30000, 30000)
+	err = winhttp.SetTimeouts(h, p.resolveTimeout, p.connectTimeout, p.sendTimeout, p.receiveTimeout)
 	if err != nil {
 		return nil, err
 	}
