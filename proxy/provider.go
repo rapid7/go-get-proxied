@@ -206,14 +206,14 @@ Returns:
 	proxy: A proxy is found through environment variables for the given traffic protocol.
 	nil: No proxy is found or an error occurs reading the environment variables.
 */
-func (p *provider) readSystemEnvProxy(protocol string, targetUrl *url.URL) Proxy {
+func (p *provider) readSystemEnvProxy(prefix string, targetUrl *url.URL) Proxy {
 	// SOCKS configuration is set as ALL_PROXY and all_proxy on Linux. Replace here for all OSs to keep consistent
-	if protocol == "socks" {
-		protocol = "all"
+	if prefix == "socks" {
+		prefix = "all"
 	}
 	keys := []string{
-		strings.ToUpper(fmt.Sprintf(proxyKeyFormat, protocol)),
-		strings.ToLower(fmt.Sprintf(proxyKeyFormat, protocol))}
+		strings.ToUpper(fmt.Sprintf(proxyKeyFormat, prefix)),
+		strings.ToLower(fmt.Sprintf(proxyKeyFormat, prefix))}
 	noProxyValues := map[string]string{
 		noProxyKeyUpper: p.getEnv(noProxyKeyUpper),
 		noProxyKeyLower: p.getEnv(noProxyKeyLower)}
