@@ -8,7 +8,7 @@ Go code (golang) package which facilitates the retrieval of system proxy configu
 #### Installation
 
 * Install this package using `go get github.com/rapid7/go-get-proxied`
-* Or, simply import `go get github.com/rapid7/go-get-proxied`, and use `dep ensure` to include it in your package
+* Or, simply import `go get github.com/rapid7/go-get-proxied`, and use `go mod tidy` to include it in your package
 
 #### Usage: 
 
