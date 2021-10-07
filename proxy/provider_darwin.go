@@ -112,6 +112,11 @@ func (p *providerDarwin) GetSOCKSProxy(targetUrl string) Proxy {
 	return p.GetProxy(protocolSOCKS, targetUrl)
 }
 
+func (p *providerDarwin) GetProxies(protocol string, targetUrl string) []Proxy {
+	proxy := p.GetProxy(protocol, targetUrl)
+	return []Proxy{proxy}
+}
+
 const (
 	scUtilBinary          = "scutil"
 	scUtilBinaryArgument  = "--proxy"
