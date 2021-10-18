@@ -28,7 +28,7 @@ func main() {
 	targetP := flag.String("t", "", "Optional. Target URL which the proxy will be used for. Default: *")
 	jsonP := flag.Bool("j", false, "Optional. If a proxy is found, write it as JSON instead of a URL.")
 	verboseP := flag.Bool("v", false, "Optional. If set, log content will be sent to stderr.")
-	useListP := flag.Bool("l", false, "Optional. If set, a list of proxy will be returned if proxy auto-config returns a list.")
+	useListP := flag.Bool("l", false, "Optional. If set, a list of proxy will be returned.")
 
 	flag.Parse()
 	var (

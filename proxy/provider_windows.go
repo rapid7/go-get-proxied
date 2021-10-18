@@ -110,7 +110,7 @@ func (p *providerWindows) GetSOCKSProxy(targetUrl string) Proxy {
 	return p.GetProxy(protocolSOCKS, targetUrl)
 }
 
-func (p *providerDarwin) GetProxies(protocol string, targetUrl string) []Proxy {
+func (p *providerWindows) GetProxies(protocol string, targetUrlStr string) []Proxy {
 	targetUrl := ParseTargetURL(targetUrlStr, protocol)
 	proxy := p.provider.get(protocol, targetUrl)
 	if proxy != nil {
@@ -319,7 +319,7 @@ func (p *providerWindows) parseProxyInfo(src string, protocol string, targetUrl 
 	proxyBypass := winhttp.LpwstrToString(lpszProxyBypass)
 	if proxyBypass != "" {
 		if p.isLpszProxyBypass(targetUrl, proxyBypass) {
-			return proxies
+			return proxies, nil
 		}
 	}
 
@@ -333,9 +333,10 @@ func (p *providerWindows) parseProxyInfo(src string, protocol string, targetUrl 
 			log.Printf("Failed to parse proxy URL\"$\"", proxyUrlStr)
 			continue
 		}
-		proxies = append(proxies, NewProxy(proxyUrl, src))
+		pr, _ := NewProxy(proxyUrl, src)
+		proxies = append(proxies, pr)
 	}
-	return proxies
+	return proxies, nil
 }
 
 /*
