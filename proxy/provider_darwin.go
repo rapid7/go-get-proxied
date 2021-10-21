@@ -114,7 +114,10 @@ func (p *providerDarwin) GetSOCKSProxy(targetUrl string) Proxy {
 
 func (p *providerDarwin) GetProxies(protocol string, targetUrl string) []Proxy {
 	proxy := p.GetProxy(protocol, targetUrl)
-	return []Proxy{proxy}
+	if proxy != nil {
+		return []Proxy{proxy}
+	}
+	return []Proxy{}
 }
 
 const (
