@@ -48,7 +48,7 @@ var dataParseURL = []struct {
 	{"", "", &url.URL{}, nil},
 	{"", "https", &url.URL{Scheme: "https"}, nil},
 	// Invalid cases
-	{"://test:8080", "", nil, errors.New("parse ://test:8080: missing protocol scheme")},
+	{"://test:8080", "", nil, errors.New("parse \"://test:8080\": missing protocol scheme")},
 	// TODO These error cases are introduced after Go 1.7
 	//{"https://[test:8080", "", nil, errors.New("parse https://[test:8080: missing ']' in host")},
 	//{"https://username:1412¶45124@test:8080", "", nil, errors.New("parse https://username:1412¶45124@test:8080: net/url: invalid userinfo")},
@@ -166,13 +166,13 @@ var dataSplitHostPort = []struct {
 	// port Max
 	{&url.URL{Host: "test:65535"}, "test", 65535, nil},
 	// Invalid - port NaN
-	{&url.URL{Host: "test1:test2"}, "", 0, errors.New("SplitHostPort test1:test2: strconv.ParseUint: parsing \"test2\": invalid syntax")},
+	{&url.URL{Host: "test1:test2"}, "", 0, errors.New("SplitHostPort \"test1:test2\": strconv.ParseUint: parsing \"test2\": invalid syntax")},
 	// Invalid - port Exceeded
-	{&url.URL{Host: "test1:65536"}, "", 0, errors.New("SplitHostPort test1:65536: strconv.ParseUint: parsing \"65536\": value out of range")},
+	{&url.URL{Host: "test1:65536"}, "", 0, errors.New("SplitHostPort \"test1:65536\": strconv.ParseUint: parsing \"65536\": value out of range")},
 	// Invalid - port signed
-	{&url.URL{Host: "test1:-1"}, "", 0, errors.New("SplitHostPort test1:-1: strconv.ParseUint: parsing \"-1\": invalid syntax")},
+	{&url.URL{Host: "test1:-1"}, "", 0, errors.New("SplitHostPort \"test1:-1\": strconv.ParseUint: parsing \"-1\": invalid syntax")},
 	// Invalid - nil URL
-	{nil, "", 0, errors.New("SplitHostPort nil: nil URL")},
+	{nil, "", 0, errors.New("SplitHostPort \"nil\": nil URL")},
 }
 
 func TestSplitHostPort(t *testing.T) {

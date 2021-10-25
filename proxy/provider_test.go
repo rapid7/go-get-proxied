@@ -254,7 +254,7 @@ var dataProviderParseEnvHTTPSProxy = []struct {
 	{"HTTPS://test:8080", newTestProxy("https", "test", 8080, nil, "Environment[Key]"), nil},
 	{"test:8999", newTestProxy("", "test", 8999, nil, "Environment[Key]"), nil},
 	// Invalid
-	{"://test:8080", nil, errors.New("parse ://test:8080: missing protocol scheme")},
+	{"://test:8080", nil, errors.New("parse \"://test:8080\": missing protocol scheme")},
 	// TODO These error cases are introduced after Go 1.7
 	//{"https", "https://[test:8080", nil, errors.New("parse https://[test:8080: missing ']' in host")},
 	//{"https", "https://username:1412¶45124@test:8080", nil, errors.New("parse https://username:1412¶45124@test:8080: net/url: invalid userinfo")},
@@ -300,7 +300,7 @@ var dataProviderParseEnvURL = []struct {
 	{"", nil, new(notFoundError)},
 	{"   ", nil, new(notFoundError)},
 	// Invalid
-	{"://test:8080", nil, errors.New("parse ://test:8080: missing protocol scheme")},
+	{"://test:8080", nil, errors.New("parse \"://test:8080\": missing protocol scheme")},
 	// TODO These error cases are introduced after Go 1.7
 	//{"https://[test:8080", nil, errors.New("parse https://[test:8080: missing ']' in host")},
 	//{"https://username:1412¶45124@test:8080", nil, errors.New("parse https://username:1412¶45124@test:8080: net/url: invalid userinfo")},
