@@ -358,11 +358,8 @@ func (p *providerWindows) parseLpszProxy(protocol string, lpszProxy string) []st
 	proxies := []string{}
 	for _, s := range strings.Split(lpszProxy, ";") {
 		parts := strings.SplitN(s, "=", 2)
-		// No protocol?
-		if len(parts) < 2 {
-			// Assign a match, but keep looking in case we have a protocol specific match
-			proxies = append(proxies, s)
-		} else if strings.TrimSpace(parts[0]) == protocol {
+		// Include the proxy if protocol matches or if no protocol is specified
+		if len(parts) < 2 || strings.TrimSpace(parts[0]) == protocol {
 			proxies = append(proxies, s)
 		}
 	}
