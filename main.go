@@ -28,6 +28,8 @@ func main() {
 	targetP := flag.String("t", "", "Optional. Target URL which the proxy will be used for. Default: *")
 	jsonP := flag.Bool("j", false, "Optional. If a proxy is found, write it as JSON instead of a URL.")
 	verboseP := flag.Bool("v", false, "Optional. If set, log content will be sent to stderr.")
+	useListP := flag.Bool("l", false, "Optional. If set, a list of proxy will be returned.")
+
 	flag.Parse()
 	var (
 		protocol string
@@ -35,6 +37,7 @@ func main() {
 		target   string
 		jsonOut  bool
 		verbose  bool
+		useList bool
 	)
 	if protocolP != nil {
 		protocol = *protocolP
@@ -57,17 +60,37 @@ func main() {
 	} else {
 		log.SetOutput(ioutil.Discard)
 	}
-	p := proxy.NewProvider(config).GetProxy(protocol, target)
+	if useListP != nil {
+		useList = *useListP
+	}
 	var exit int
-	if p != nil {
-		if jsonOut {
-			b, _ := json.MarshalIndent(p, "", "   ")
-			fmt.Println(string(b))
+
+	if useList {
+		ps := proxy.NewProvider(config).GetProxies(protocol, target)
+		if ps != nil {
+			if jsonOut {
+				b, _ := json.MarshalIndent(ps, "", "   ")
+				fmt.Println(string(b))
+			} else {
+				for _, p := range ps {
+					println(p.URL().String())
+				}
+			}
 		} else {
-			println(p.URL().String())
+			exit = 1
 		}
 	} else {
-		exit = 1
+		p := proxy.NewProvider(config).GetProxy(protocol, target)
+		if p != nil {
+			if jsonOut {
+				b, _ := json.MarshalIndent(p, "", "   ")
+				fmt.Println(string(b))
+			} else {
+				println(p.URL().String())
+			}
+		} else {
+			exit = 1
+		}
 	}
 	os.Exit(exit)
 }
