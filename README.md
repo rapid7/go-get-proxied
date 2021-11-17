@@ -29,10 +29,11 @@ func main() {
 #### Command Line Usage:
 ```bash
 > ./go-get-proxied -h
-Usage of ./go-get-proxied:
+Usage of ./get_proxy:
   -c string
     	Optional. Path to configuration file.
   -j	Optional. If a proxy is found, write it as JSON instead of a URL.
+  -l	Optional. If set, a list of proxy will be returned.
   -p string
     	Optional. The proxy protocol you wish to lookup. Default: https (default "https")
   -t string
