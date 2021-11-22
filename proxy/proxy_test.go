@@ -77,12 +77,12 @@ var dataNewProxy = []struct {
 	// Invalid port
 	{
 		&url.URL{Scheme: "https", Host: "testProxy:testPort"},
-		nil, errors.New("SplitHostPort \"testProxy:testPort\": strconv.ParseUint: parsing \"testPort\": invalid syntax"),
+		nil, errors.New("strconv.ParseUint: parsing \"testPort\": invalid syntax"),
 	},
 	// Negative port
 	{
 		&url.URL{Scheme: "https", Host: "testProxy:-1"},
-		nil, errors.New("SplitHostPort \"testProxy:-1\": strconv.ParseUint: parsing \"-1\": invalid syntax"),
+		nil, errors.New("strconv.ParseUint: parsing \"-1\": invalid syntax"),
 	},
 	// Empty host
 	{
@@ -116,7 +116,7 @@ func TestNewProxy(t *testing.T) {
 				a.Nil(err)
 			} else {
 				if a.NotNil(err) {
-					a.Equal(tt.expectErr.Error(), err.Error())
+					a.Contains(err.Error(), tt.expectErr.Error())
 				}
 			}
 		})
