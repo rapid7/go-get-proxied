@@ -14,6 +14,8 @@ package proxy
 
 import (
 	"github.com/rapid7/go-get-proxied/winhttp"
+	"fmt"
+	"strconv"
 	"log"
 	"net/url"
 	"reflect"
@@ -356,11 +358,19 @@ Returns:
 //noinspection SpellCheckingInspection
 func (p *providerWindows) parseLpszProxy(protocol string, lpszProxy string) []string {
 	proxies := []string{}
+	lpszProxy = strings.TrimSpace(lpszProxy)
+	fmt.Println(lpszProxy + strconv.Itoa(len(lpszProxy)))
+	if len(lpszProxy) == 0 {
+		return proxies
+	}
 	for _, s := range strings.Split(lpszProxy, ";") {
 		parts := strings.SplitN(s, "=", 2)
 		// Include the proxy if protocol matches or if no protocol is specified
-		if len(parts) < 2 || strings.TrimSpace(parts[0]) == protocol {
+		if len(parts) < 2 {
+			// Assign a match, but keep looking in case we have a protocol specific match
 			proxies = append(proxies, s)
+		} else if strings.TrimSpace(parts[0]) == protocol {
+			proxies = append(proxies, parts[1])
 		}
 	}
 	return proxies
