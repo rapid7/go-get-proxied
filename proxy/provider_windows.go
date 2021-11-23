@@ -14,8 +14,6 @@ package proxy
 
 import (
 	"github.com/rapid7/go-get-proxied/winhttp"
-	"fmt"
-	"strconv"
 	"log"
 	"net/url"
 	"reflect"
@@ -359,7 +357,6 @@ Returns:
 func (p *providerWindows) parseLpszProxy(protocol string, lpszProxy string) []string {
 	proxies := []string{}
 	lpszProxy = strings.TrimSpace(lpszProxy)
-	fmt.Println(lpszProxy + strconv.Itoa(len(lpszProxy)))
 	if len(lpszProxy) == 0 {
 		return proxies
 	}
