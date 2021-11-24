@@ -20,14 +20,14 @@ import (
 
 var dataProviderWindowsParseLpszProxy = []struct {
 	lpszProxy string
-	expect    string
+	expect    []string
 }{
-	{"1.2.3.4:8443", "1.2.3.4:8443"},
-	{"1.2.3.4:8443;4.5.6.7:8999", "4.5.6.7:8999"},
-	{"1.2.3.4:8443;http=4.5.6.7:8999", "1.2.3.4:8443"},
-	{"http=1.2.3.4:8443;https=4.5.6.7:8999", "4.5.6.7:8999"},
-	{"", ""},
-	{"  ", "  "},
+	{"1.2.3.4:8443", []string{"1.2.3.4:8443"}},
+	{"1.2.3.4:8443;4.5.6.7:8999", []string{"1.2.3.4:8443","4.5.6.7:8999"}},
+	{"1.2.3.4:8443;http=4.5.6.7:8999", []string{"1.2.3.4:8443"}},
+	{"http=1.2.3.4:8443;https=4.5.6.7:8999", []string{"4.5.6.7:8999"}},
+	{"", []string{}},
+	{"  ", []string{}},
 }
 
 func TestProviderWindows_ParseLpszProxy(t *testing.T) {
