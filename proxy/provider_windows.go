@@ -55,6 +55,9 @@ func (p *providerWindows) GetProxy(protocol string, targetUrlStr string) Proxy {
 		return proxy
 	}
 	proxies := p.readWinHttpProxy(protocol, targetUrl)
+	if len(proxies) == 0 {
+		return nil
+	}
 	return proxies[len(proxies) - 1]
 }
 
