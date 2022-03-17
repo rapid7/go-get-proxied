@@ -184,6 +184,10 @@ func (p *provider) SetLog(log bool) {
 	p.enableLogging = log
 }
 
+/*
+	Format and log a string. Will only log if logging is enabled on the provider.
+	Arguments are handled in the manner of fmt.Printf.
+*/
 func (p *provider) log(format string, v ...interface{}) {
 	if p.enableLogging {
 		log.Printf(format, v...)
