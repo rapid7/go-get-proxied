@@ -1,0 +1,15 @@
+---
+info:
+  title: Go Get Proxied
+  description: Cross platform retrieval of system proxy configurations
+  x-cortex-git:
+    github:
+      alias: r7org
+      repository: rapid7/go-get-proxied
+  x-cortex-tag: go-get-proxied
+  x-cortex-type: service
+  x-cortex-domain-parents:
+  - tag: endpoint
+openapi: 3.0.1
+servers:
+- url: "/"
