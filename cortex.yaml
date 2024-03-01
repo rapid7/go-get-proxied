@@ -9,7 +9,7 @@ info:
   x-cortex-tag: go-get-proxied
   x-cortex-type: service
   x-cortex-domain-parents:
-  - tag: endpoint
+  - tag: endpoint-mavericks
 openapi: 3.0.1
 servers:
 - url: "/"
