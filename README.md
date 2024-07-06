@@ -19,7 +19,7 @@ import (
     "github.com/rapid7/go-get-proxied/proxy"
 )
 func main() {
-    p := proxy.NewProvider("").Get("https", "https://rapid7.com")
+    p := proxy.NewProvider("").GetProxy("https", "https://rapid7.com")
     if p != nil {
         fmt.Printf("Found proxy: %s\n", p)
     }
