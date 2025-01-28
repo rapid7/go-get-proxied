@@ -98,6 +98,13 @@ type Provider interface {
 	*/
 	SetTimeouts(resolve int, connect int, send int, receive int)
 	GetProxies(protocol string, targetUrl string) []Proxy
+
+	/*
+		Set whether the provider should log or not.
+		Params:
+			log: True to enable logging, false to disable logging. Provider default is true.
+	*/
+	SetLog(log bool)
 }
 
 const (
@@ -133,6 +140,7 @@ type provider struct {
 	connectTimeout int
 	sendTimeout    int
 	receiveTimeout int
+	enableLogging  bool
 }
 
 func (p *provider) init(configFile string) {
@@ -143,6 +151,7 @@ func (p *provider) init(configFile string) {
 	p.connectTimeout = defaultConnectTimeout
 	p.sendTimeout = defaultSendTimeout
 	p.receiveTimeout = defaultReceiveTimeout
+	p.enableLogging = true
 }
 
 /*
@@ -164,6 +173,25 @@ func (p *provider) SetTimeouts(resolve int, connect int, send int, receive int) 
 	p.connectTimeout = connect
 	p.sendTimeout = send
 	p.receiveTimeout = receive
+}
+
+/*
+	Set whether the provider should log or not.
+	Params:
+		log: True to log, false to not log. Provider default is true.
+*/
+func (p *provider) SetLog(log bool) {
+	p.enableLogging = log
+}
+
+/*
+	Format and log a string. Will only log if logging is enabled on the provider.
+	Arguments are handled in the manner of fmt.Printf.
+*/
+func (p *provider) log(format string, v ...interface{}) {
+	if p.enableLogging {
+		log.Printf(format, v...)
+	}
 }
 
 /*
@@ -196,7 +224,7 @@ Returns:
 func (p *provider) readConfigFileProxy(protocol string) Proxy {
 	proxyJson, err := p.unmarshalProxyConfigFile()
 	if err != nil {
-		log.Printf("[proxy.Provider.readConfigFileProxy]: %s\n", err)
+		p.log("[proxy.Provider.readConfigFileProxy]: %s\n", err)
 		return nil
 	}
 	uStr, exists := proxyJson[protocol]
@@ -209,7 +237,7 @@ func (p *provider) readConfigFileProxy(protocol string) Proxy {
 		uProxy, uErr = NewProxy(uUrl, srcConfigurationFile)
 	}
 	if uErr != nil {
-		log.Printf("[proxy.Provider.readConfigFileProxy]: invalid config file proxy, skipping \"%s\": \"%s\"\n", protocol, uStr)
+		p.log("[proxy.Provider.readConfigFileProxy]: invalid config file proxy, skipping \"%s\": \"%s\"\n", protocol, uStr)
 		return nil
 	}
 	return uProxy
@@ -282,7 +310,7 @@ K:
 		proxy, err := p.parseEnvProxy(key)
 		if err != nil {
 			if !isNotFound(err) {
-				log.Printf("[proxy.Provider.readSystemEnvProxy]: failed to parse \"%s\" value: %s\n", key, err)
+				p.log("[proxy.Provider.readSystemEnvProxy]: failed to parse \"%s\" value: %s\n", key, err)
 			}
 			continue
 		}
@@ -292,7 +320,7 @@ K:
 				continue
 			}
 			bypass = p.isProxyBypass(targetUrl, proxyBypass, ",")
-			log.Printf("[proxy.Provider.readSystemEnvProxy]: \"%s\"=\"%s\", targetUrl=%s, bypass=%t", noProxyKey, proxyBypass, targetUrl, bypass)
+			p.log("[proxy.Provider.readSystemEnvProxy]: \"%s\"=\"%s\", targetUrl=%s, bypass=%t", noProxyKey, proxyBypass, targetUrl, bypass)
 			if bypass {
 				continue K
 			}
