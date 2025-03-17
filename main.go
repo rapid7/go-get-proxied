@@ -16,10 +16,10 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/rapid7/go-get-proxied/proxy"
-	"io/ioutil"
 	"log"
 	"os"
+
+	"github.com/rapid7/go-get-proxied/proxy"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 		target   string
 		jsonOut  bool
 		verbose  bool
-		useList bool
+		useList  bool
 	)
 	if protocolP != nil {
 		protocol = *protocolP
@@ -54,19 +54,18 @@ func main() {
 	if verboseP != nil {
 		verbose = *verboseP
 	}
-	if verbose {
-		log.SetFlags(0)
-		log.SetOutput(os.Stderr)
-	} else {
-		log.SetOutput(ioutil.Discard)
-	}
 	if useListP != nil {
 		useList = *useListP
 	}
 	var exit int
 
+	log.SetFlags(0)
+	log.SetOutput(os.Stderr)
+
+	provider := proxy.NewProvider(config)
+	provider.SetLog(verbose)
 	if useList {
-		ps := proxy.NewProvider(config).GetProxies(protocol, target)
+		ps := provider.GetProxies(protocol, target)
 		if ps != nil {
 			if jsonOut {
 				b, _ := json.MarshalIndent(ps, "", "   ")
@@ -80,7 +79,7 @@ func main() {
 			exit = 1
 		}
 	} else {
-		p := proxy.NewProvider(config).GetProxy(protocol, target)
+		p := provider.GetProxy(protocol, target)
 		if p != nil {
 			if jsonOut {
 				b, _ := json.MarshalIndent(p, "", "   ")
