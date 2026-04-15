@@ -333,7 +333,7 @@ func (p *providerWindows) parseProxyInfo(src string, protocol string, targetUrl 
 	for _, proxyUrlStr := range proxyUrlStrList {
 		proxyUrl, err := ParseURL(proxyUrlStr, "")
 		if err != nil {
-			log.Printf("Failed to parse proxy URL\"$\"", proxyUrlStr)
+			log.Printf("Failed to parse proxy URL %q", proxyUrlStr)
 			continue
 		}
 		pr, _ := NewProxy(proxyUrl, src)

@@ -13,7 +13,6 @@
 package proxy
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -79,7 +78,7 @@ Returns:
 */
 func SplitHostPort(u *url.URL) (host string, port uint16, err error) {
 	if u == nil {
-		return "", 0, newSplitHostPortError("nil", errors.New("nil URL"))
+		return "", 0, newSplitHostPortError("nil", fmt.Errorf("nil URL"))
 	}
 	host = strings.TrimSpace(u.Host)
 	portStr := ""
@@ -97,7 +96,7 @@ func SplitHostPort(u *url.URL) (host string, port uint16, err error) {
 		if err != nil {
 			return "", 0, newSplitHostPortError(u.Host, err)
 		} else if port64 > maxUint16 {
-			return "", 0, newSplitHostPortError(u.Host, errors.New(fmt.Sprintf("%d > %d", port64, maxUint16)))
+			return "", 0, newSplitHostPortError(u.Host, fmt.Errorf("%d > %d", port64, maxUint16))
 		}
 		port = uint16(port64)
 	}
