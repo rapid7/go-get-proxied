@@ -17,7 +17,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/rapid7/go-get-proxied/proxy"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 )
@@ -58,7 +58,7 @@ func main() {
 		log.SetFlags(0)
 		log.SetOutput(os.Stderr)
 	} else {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 	if useListP != nil {
 		useList = *useListP

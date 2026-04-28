@@ -15,9 +15,7 @@ package proxy
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -232,21 +230,21 @@ func (p *provider) unmarshalProxyConfigFile() (map[string]string, error) {
 		if !os.IsNotExist(err) {
 			return nil, err
 		}
-		return nil, errors.New(fmt.Sprintf("proxy configuration file not present: %s", f))
+		return nil, fmt.Errorf("proxy configuration file not present: %s", f)
 	} else if stat.IsDir() {
-		return nil, errors.New(fmt.Sprintf("proxy configuration file is a directory: %s", f))
+		return nil, fmt.Errorf("proxy configuration file is a directory: %s", f)
 	} else if stat.Size() <= 0 {
-		return nil, errors.New(fmt.Sprintf("proxy configuration file empty: %s", f))
+		return nil, fmt.Errorf("proxy configuration file empty: %s", f)
 	} else if stat.Size() > 1048576 {
-		return nil, errors.New(fmt.Sprintf("proxy configuration file too large: %s", f))
+		return nil, fmt.Errorf("proxy configuration file too large: %s", f)
 	}
-	out, err := ioutil.ReadFile(f)
+	out, err := os.ReadFile(f)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("failed to read proxy configuration file: %s: %s", f, err))
+		return nil, fmt.Errorf("failed to read proxy configuration file: %s: %s", f, err)
 	}
 
 	if err = json.Unmarshal(out, &m); err != nil {
-		return nil, errors.New(fmt.Sprintf("failed to unmarshal proxy configuration file: %s: %s", f, err))
+		return nil, fmt.Errorf("failed to unmarshal proxy configuration file: %s: %s", f, err)
 	}
 	// Sanitize the protocols so we can be case insensitive
 	for protocol, v := range m {
