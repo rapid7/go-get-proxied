@@ -1,6 +1,6 @@
 module github.com/rapid7/go-get-proxied
 
-go 1.25.7
+go 1.26.5
 
 require (
 	github.com/stretchr/testify v1.11.1
