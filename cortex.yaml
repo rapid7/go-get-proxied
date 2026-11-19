@@ -14,7 +14,14 @@ info:
   - exposure:external-ship
   - criticality:critical
   x-cortex-domain-parents:
-  - tag: endpoint-mavericks
+  - tag: endpoint-gophers
+  x-cortex-issues:
+    jira:
+      projects:
+        - name: Endpoint
+        - name: EXM
+        - name: DR
+      defaultJql: 'summary ~ "\"go-get-proxied\""'
 openapi: 3.0.1
 servers:
 - url: "/"
