@@ -4,3 +4,5 @@
 *.exe
 .DS_Store
 go-get-proxied
+.claude/settings.local.json
+.claude/.credentials.json
